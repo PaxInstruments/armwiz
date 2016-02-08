@@ -123,54 +123,54 @@ __status__ = "Development"
 ## Class definitions ##
 #######################
 
-class manufacturer(object):
+class Manufacturer(object):
 	# TODO Add appropriate docstring
 	"""The manufacturer of an object"""
-	def __init__(self,name,website):
-		self.name=name
-		self.website=website
+	def __init__(self,item_type,proper_name,website_url):
+		self.item_type = item_type
+		self.proper_name = proper_name
+		self.website_url = website_url
 		
-class core(object):
+class Core(object):
 	# TODO Add appropriate docstring
 	"""The MCU core designed by ARM."""
-	def __init__(self,name,architecture):
-		self.name=name
-		self.architecture=architecture
+	def __init__(self,item_type,proper_name,chip_family,architecture,manufacturer,gcc_flag_mcpu):
+		self.item_type = item_type
+		self.proper_name = proper_name
+		self.chip_family = chip_family
+		self.architecture = architecture
+		self.manufacturer = manufacturer
+		self.gcc_flag_mcpu = gcc_flag_mcpu
 
-class mcu(object):
-	# TODO Add appropriate docstring
-	"""Microcontroller IC."""
-	def __init__(self,name,manufacturer,core):
-		self.name=name
-		self.manufacturer=manufacturer
-		self.architecture=core
-
-class board(object):
-	# TODO Add appropriate docstring
-	"""Development board or product"""
-	def __init__(self,name,manufacturer,mcu,website):
-		self.name=name
-		self.manufacturer=manufacturer
-		self.mcu=mcu
-		self.website=website
-
-class target(object):
+class Target(object):
 	# TODO Add appropriate docstring
 	"""The target for which armwiz will generate a project. This could be
 	a development board or just an MCU."""
-	def __init__(self,name,manufacturer):
-		self.name=name
-		self.manufacturer=manufacturer
-		self.mcu=mcu
+	def __init__(self,item_type,proper_name,mcu,cli_argument,core,manufacturer,short_description,long_description,website_url):
+		self.item_type = item_type
+		self.proper_name = proper_name
+		self.mcu = mcu
+		self.cli_argument = cli_argument
+		self.core = core
+		self.manufacturer = manufacturer
+		self.short_description = short_description
+		self.long_description = long_description
+		self.website_url = website_url
 
 class Library(object):
 	"""Libraries in git."""
-	def __init__(self,name,gitName,gitURL):
-		self.name=name
-		self.gitName=gitName
-		self.gitURL=gitURL
-		self.libTargetDir='{0}/{1}'.format('libraries',self.gitName)
-		self.libSourceDir='{0}/{1}'.format('libraries',self.gitName)
+	def __init__(self,item_type,proper_name,cli_argument,short_description,long_description,git_name,git_url,website_url):
+		self.item_type = item_type
+		self.proper_name = proper_name
+		self.cli_argument = cli_argument
+		self.short_description = short_description
+		self.long_description = long_description
+		self.git_name = git_name
+		self.git_url = git_url
+		self.website_url = website_url
+		# TODO The lines below should to into a function and not as a property of the object
+		# self.libTargetDir='{0}/{1}'.format('libraries',self.gitName)
+		# self.libSourceDir='{0}/{1}'.format('libraries',self.gitName)
 
 ##########################
 ## Function definitions ##
@@ -200,8 +200,6 @@ def printWizard():
 	print("             _.-'    /     Bb     '-. '-._          ")
 	print("         _.-'       |      BBb       '-.  '-.       ")
 	print("        (__________/\____.dBBBb.________)____)      ")
-	printHeader()
-	print('')
 
 def printHeader():
 	# TODO Add appropriate docstring
@@ -222,27 +220,27 @@ def parseArguments():
 	"""Parses command line arguments. Returns array."""
 	parser = argparse.ArgumentParser(
 		description='Generate a template embedded ARM project.',
-		epilog="armwiz 2016")
+		# TODO Put 'armwiz' into the standard program header informatin
+		epilog="armwiz {}".format(__date__))
 	parser.add_argument('-p','--projectname',
 		help='Specify project name via -p <projectname>',
 		metavar="<projectname>",
 		required=False)
-	parser.add_argument('-t','--target',
-		help='Specify target microcontroller via -t <targetname>',
+	parser.add_argument('-t','--targetname',
+		help='Specify target microcontroller or processor via -t <targetname>',
 		metavar="<targetname>",
-		default='board_china_stm32f1c8t6_Board_v402',
 		required=False)
-	parser.add_argument('-l','--library',
-		help='Specify a library to include',
-		metavar="<library>",
+	parser.add_argument('-l','--libraryname',
+		help='Specify a library to include via -l <libraryname>',
+		metavar="<libraryname>",
 		action="append",
 		required=False)
 	parser.add_argument('-L',
-		help='List available libraries',
+		help='List all libraries available to the -l, --libraryname argument',
 		action="store_true",
 		required=False)
-	parser.add_argument('--targetlist',
-		help='Print a list of available targets',
+	parser.add_argument('-T',
+		help='List all targets available to the -t, --targetname argument',
 		action="store_true",
 		required=False)
 	parser.add_argument('-w','--wizard',
@@ -262,79 +260,71 @@ def parseArguments():
 		action='version')
 	return parser
 
-def copySTM103Files(projectname):
-	# Copy main.c
-	call('cp resources/gpio/main.c {}/'.format(projectname),shell=True)
-	# Copy Makefile
-	call('cp resources/gpio/Makefile {}/'.format(projectname),shell=True)
-	# Copy startup_stm32f103xe.s
-	call('cp {}/libraries/STM32CubeF1/Drivers/CMSIS/Device/ST/STM32F1xx/Source/Templates/gcc/startup_stm32f103xe.s {}/'.format(projectname,projectname),shell=True)
+def makePath(paths):
+	"""Create a directory a name or list of directories from an array.
+	Usage:
+		makePath('<directory>')
+		makePath(['<directory 1>','<directory 2>',...,'<directory n>'])
+	"""
 	try:
-		# Comment out a text line that has been causing a linker error
-		for line in fileinput.FileInput('{}/startup_stm32f103xe.s'.format(projectname), inplace=True):
-			print(line.replace('    bl __libc_init_array', '/*    bl __libc_init_array */'), end='')
-	except:
-		raise
-	# Copy STM32F103XE_FLASH.ld
-	call('cp {}/libraries/STM32CubeF1/Drivers/CMSIS/Device/ST/STM32F1xx/Source/Templates/gcc/linker/STM32F103XE_FLASH.ld {}/'.format(projectname,projectname),shell=True)
-	with open('{}/STM32F103XE_FLASH.ld'.format(projectname),'r+',encoding='windows-1252') as f:
-		# Remove the weird zeros that surround functions.
-		content = f.read()
-		f.seek(0)
-		f.truncate()
-		f.write(content.replace('\n0\n', '\n\n'))
-	f.close()
-	# Copy stm32f10x_conf.h
-	call('cp resources/gpio/stm32f10x_conf.h {}/'.format(projectname),shell=True)
-	call('cp resources/gpio/system_stm32f10x.c {}/'.format(projectname),shell=True)
-	#call('cp {}/libraries/STM32CubeF1/Drivers/CMSIS/Device/ST/STM32F1xx/Source/Templates/system_stm32f1xx.c {}/'.format(projectname,projectname),shell=True)
-	call('cp resources/gpio/include/* {}/include/'.format(projectname),shell=True)
-
-def makePath(path):
-	# TODO Add appropriate docstring
-	"""Make a directory path."""
-	try:
-		os.makedirs(path)
-	except OSError as exception:
-		if exception.errno == errno.EEXIST:
-			raise
+		if type(paths) is str:
+			os.makedirs(paths)
+		elif type(paths) is list:
+			for path in paths:
+				os.makedirs(path)
 		else:
-			print('ERROR: Unknown error in makePath()')
-			raise
-		exit()
+			raise TypeError("Value must be a string or an array.")
+	except:
+		raise
+	return True
 
-def makeProjectDirectoryTree(arguments):
-	# TODO Add appropriate docstring
+def makeProjectTree(root, paths):
+	""" Create a directory tree consisting of a root directory and sub directories.
+	Usage:
+		makeProjectTree(<projectname>,<list of paths>)
+
+	Example:
+	>>> makeProjectTree(projectname,['subDir1','subDir2'])
+	$ tree # Executed in terminal
+	.
+	└── projectname
+	    ├── subDir1
+	    └── subDir2
+
 	"""
-	Make project directory tree
-	Takes <projectname> as argument
-	"""
-	# TODO Make a table containing a list of directories to make.
-	# TODO Make the function iterate through the list of directories
-	#      and creat them.
-	# TODO The directory generation function should first go through the list
-	#      to determin if it can be made. If not, throw an error.
-	print('Creating {0}/ directory... '.format(arguments.projectname), end="")
-	sys.stdout.flush()
 	try:
-		makePath(arguments.projectname)
-		makePath('%s/binary' % arguments.projectname)
-		makePath('%s/include' % arguments.projectname)
-		makePath('%s/libraries' % arguments.projectname)
-		makePath('%s/source' % arguments.projectname)
-		makePath('%s/tools' % arguments.projectname)
-		makePath('%s/.git' % arguments.projectname)
-		makePath('%s/.git/modules' % arguments.projectname)
-		makePath('%s/.git/modules/libraries' % arguments.projectname)
-		print('Okay')
+		assert type(root) is str
 	except:
-		print('ERROR')
-		raise
+		raise TypeError("Value for <root directory> must be a string. type({}) gives {}".format(root,type(root)))
 	try:
-		call('git init -q {0}'.format(arguments.projectname),shell=True)
-	except:
-		print('ERROR')
-		raise
+		makePath(root)
+	except FileExistsError:
+		raise FileExistsError("The directory {} already exists.".format(root))
+	if type(paths) is str:
+		try:
+			makePath("{}/{}".format(root,paths))
+		except FileExistsError:
+			raise FileExistsError("The directory {}/{} already exists.".format(root,paths))
+		except:
+			raise
+	elif type(paths) is list:
+		for path in paths:
+			try:
+				makePath("{}/{}".format(root,path))
+			except:
+				raise
+	return True
+
+## Some quick test code 
+# projectTreeTemplate = [
+# 	'binary',
+# 	'include',
+# 	'libraries',
+# 	'source',
+# 	'tools',
+# 	'.git/modules/libraries']
+# makeProjectTree('hello',projectTreeTemplate)
+
 
 def deployMakefile(arguments):
 	"""
