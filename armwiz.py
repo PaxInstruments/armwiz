@@ -96,7 +96,8 @@
 
 # TODO: Add appropriate information to docstring.
 """
-Armwiz docstring.
+Project template generator for ARM processors and development
+boards.
 """
 ## Import standard libraries
 from subprocess import call
@@ -159,15 +160,15 @@ class Target(object):
 
 class Library(object):
 	"""Libraries in git."""
-	def __init__(self,item_type,proper_name,cli_argument,short_description,long_description,git_name,git_url,website_url):
-		self.item_type = item_type
-		self.proper_name = proper_name
-		self.cli_argument = cli_argument
-		self.short_description = short_description
-		self.long_description = long_description
-		self.git_name = git_name
-		self.git_url = git_url
-		self.website_url = website_url
+	def __init__(self):
+		self.item_type = 'library'
+		self.proper_name = ''
+		self.cli_argument = ''
+		self.short_description = ''
+		self.long_description = ''
+		self.git_name = ''
+		self.git_url = ''
+		self.website_url = ''
 		# TODO The lines below should to into a function and not as a property of the object
 		# self.libTargetDir='{0}/{1}'.format('libraries',self.gitName)
 		# self.libSourceDir='{0}/{1}'.format('libraries',self.gitName)
@@ -263,7 +264,7 @@ def parseArguments():
 	return parser
 
 def makePath(paths):
-	"""Create a directory path from a string or list of strings and return True.
+	"""Create a directory path from a string or list of strings and return the path.
 	Usage:
 		makePath('<directory>')
 		makePath(['<directory 1>','<directory 2>',...,'<directory n>'])
@@ -285,6 +286,7 @@ def makePath(paths):
 	if type(paths) is str:
 		try:
 			os.makedirs(paths)
+			return paths
 		except:
 			raise
 	elif type(paths) is list:
@@ -292,7 +294,6 @@ def makePath(paths):
 			makePath(path)
 	else:
 		raise TypeError("Value for each path must be a string or a list of strings. {} is not a string.".format(path))
-	return True
 
 def makeTemporaryDirectory(directoryName):
 	"""Creates /tmp/<directoryName> and returns path.
@@ -345,74 +346,35 @@ def makeProjectTree(root, paths):
 				raise
 	return True
 
-def deployMakefile(arguments):
+def deployLibrary(targetProjectRootPath,library):
+	"""Deploy library to a project directory
 	"""
-	# Generate the Makefile
-	# Takes <projectname> as argument
-	"""
-	# TODO Generate Makefile from template
-	# TODO Try to make a Makefile that can be used regardless of which libraries
-	#      are have been copied. Maybe have one long Makefile with rules for
-	#      compilaiton based on which libraries are present in the libraries directory.
-	#      Each library will have a .git file we can look at.
-
-def deployExample(arguments):
-	"""
-	Generate the Makefile
-	Takes <projectname> as argument
-	"""
-	# TODO Generate examples. Modify based on configuration for appropriate LEDs etc.
-	# TODO Made an example file specfically for each board and configuration. The
-	#      examples must be tailored rather than generated. Generating them on the
-	#      fly would be unweildy.
-	# TODO Make a directory with a bunch of different examples.
-
-def deployLibrary(projectname,library):
-	"""Deploy a library class object"""
 	# TODO Deploy library to a specific path if the library does not exist there. Do
 	#      not use this to generate the overall project. This function can deploy a
 	#      library to any path.
-	print('Copying {} libraries... '.format(library.name), end="")
-	sys.stdout.flush()
-	makePath("{0}/{1}".format(projectname,library.libTargetDir))
+	if not os.path.exists(targetProjectRootPath):
+		raise Exception("The target path {} does not exist.".format(targetProjectRootPath))
 	try:
-		# TODO Verify that the git code is actually downloaded. Look for .git directory.
-		assert os.path.exists(library.libSourceDir) == True
+		call('rsync -ac libraries/{} {}/libraries/{}/'.format(library.git_name,targetProjectRootPath,library.git_name),shell=True)
 	except:
-		print('Error')
-		print('The source library directory does not exist.')
-		exit()
+		raise Exception('ERROR using rsync to copy {}'.format(library.proper_name))
 	try:
-		call('rsync -ac {}/ {}/{}/'.format(library.libSourceDir,projectname,library.libTargetDir),shell=True)
-	except:
-		print('ERROR using rsync to copy {}'.format(library.name))
-	try:
-		call('rsync -ac .git/modules/{}/ {}/.git/modules/{}/'.format(library.libSourceDir,projectname,library.libTargetDir),shell=True)
-		moduleFile = open('{0}/.gitmodules'.format(projectname), 'a')
-		moduleFile.write("\n[submodule \"{0}\"]\n".format(library.libTargetDir))
-		moduleFile.write("\tpath = {0}\n".format(library.libTargetDir))
-		moduleFile.write("\turl = {0}\n".format(library.gitURL))
+		call('rsync -ac .git/modules/libraries/{}/ {}/.git/modules/libraries/{}/'.format(library.git_name,targetProjectRootPath,library.git_name),shell=True)
+		moduleFile = open('{}/.gitmodules'.format(targetProjectRootPath), 'a')
+		moduleFile.write("\n[submodule \"libraries/{}\"]\n".format(library.git_name))
+		moduleFile.write("\tpath = libraries/{}\n".format(library.git_name))
+		moduleFile.write("\turl = {}\n".format(library.git_url))
 		moduleFile.close()
-		print('Okay')
-		sys.stdout.flush()
 	except:
-		print('ERROR copying')
-		exit()
+		raise Exception('ERROR copying git stuff')
 	try:
-		print('Adding {} to git... '.format(library.name),end='')
-		sys.stdout.flush()
-		call('cd {0}; git add .gitmodules; git add {1}; git submodule init -q '.format(projectname,library.libTargetDir),shell=True)
+		call('cd {}; git add .gitmodules; git add libraries/{}; git submodule init -q '.format(targetProjectRootPath,library.git_name),shell=True)
 	except:
-		print('Error')
-		print("Error initializing submodule")
+		raise
 	try:
-		sys.stdout.flush()
-		call("cd {0}; git commit -qam 'armwiz added {1}'".format(projectname,library.name),shell=True)
-		print('Okay')
-		sys.stdout.flush()
+		call("cd {}; git commit -qam 'armwiz added {}'".format(targetProjectRootPath,library.proper_name),shell=True)
 	except:
-		pritn('Error')
-		print('Error Committing changes')
+		raise
 
 def is_valid_file(parser, arg):
     if not os.path.exists(arg):
@@ -436,9 +398,9 @@ def main():
 
 	if arguments.L == True:
 		try:
-			libraryConfigFileName = 'libraries.config'
+			libraryConfigFileName = 'armwiz.config'
 			libraryConfig = configparser.ConfigParser()
-			libraryConfig.read('libraries.config')
+			libraryConfig.read('armwiz.config')
 			assert len(libraryConfig.read(libraryConfigFileName)) !=0
 			# TODO Verify file is valid
 			# TODO Make a function for checking file presence and validity
