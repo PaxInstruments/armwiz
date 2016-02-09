@@ -177,7 +177,7 @@ class Library(object):
 ##########################
 def printWizard():
 	# TODO Add appropriate docstring
-	"""Prints the wizard and header."""
+	"""Prints the wizard and header and return True."""
 	print("                             ____                   ")
 	print("                          .'* *.'                   ")
 	print("                       __/_*_*(_                    ")
@@ -200,10 +200,11 @@ def printWizard():
 	print("             _.-'    /     Bb     '-. '-._          ")
 	print("         _.-'       |      BBb       '-.  '-.       ")
 	print("        (__________/\____.dBBBb.________)____)      ")
+	return True
 
 def printHeader():
 	# TODO Add appropriate docstring
-	"""Prints the header"""
+	"""Prints the header and returns True."""
 	print("     █████╗ ██████╗ ███╗   ███╗██╗    ██╗██╗███████╗")
 	print("    ██╔══██╗██╔══██╗████╗ ████║██║    ██║██║╚══███╔╝")
 	print("    ███████║██████╔╝██╔████╔██║██║ █╗ ██║██║  ███╔╝ ")
@@ -211,6 +212,7 @@ def printHeader():
 	print("    ██║  ██║██║  ██║██║ ╚═╝ ██║╚███╔███╔╝██║███████╗")
 	print("    ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝     ╚═╝ ╚══╝╚══╝ ╚═╝╚══════╝")
 	print("                                      version",__version__ )
+	return True
 
 def parseArguments():
 	# TODO Make all the library options use a simple '-l' flag. The
@@ -278,14 +280,13 @@ def makePath(paths):
 		for entry in paths:
 			if not type(entry) is str:
 				raise TypeError("The type for each pasdfsdfth must be a string. type({}) gives {}".format(entry,type(entry)))
-		except TypeError:
-			raise TypeError("The type for each path must be a string. type({}) gives {}".format(entry,type(entry)))
+	except TypeError:
+		raise TypeError("The type for each path must be a string. type({}) gives {}".format(entry,type(entry)))
 	if type(paths) is str:
 		try:
 			os.makedirs(paths)
-		except FileExistsError:
-			print('hello')
-			pass
+		except:
+			raise
 	elif type(paths) is list:
 		for path in paths:
 			makePath(path)
@@ -293,13 +294,29 @@ def makePath(paths):
 		raise TypeError("Value for each path must be a string or a list of strings. {} is not a string.".format(path))
 	return True
 
-def makeProjectTree(root, paths):
-	""" Create a directory tree consisting of a root directory and sub directories.
+def makeTemporaryDirectory(directoryName):
+	"""Creates /tmp/<directoryName> and returns path.
+
 	Usage:
-		makeProjectTree(<projectname>,<list of paths>)
+	myDir = makeTemporaryDirectory(<directoryName>)
+	"""
+	try:
+		iteratedDir = 0
+		while os.path.exists('/tmp/armwiz/{}/{}'.format(iteratedDir,directoryName)):
+			iteratedDir += 1
+		path = '/tmp/armwiz/{}/{}'.format(iteratedDir,directoryName)
+		makePath(path)
+		return path
+	except:
+		raise
+
+def makeProjectTree(root, paths):
+	""" Create a directory tree inside of root directory and return True.
+	Usage:
+		makeProjectTree(<rootDirectory>,<list of paths>)
 
 	Example:
-	>>> makeProjectTree('projectname',['subDir1','subDir2'])
+	>>> makeProjectTree('~/myProject',['subDir1','subDir2'])
 	$ tree # Executed in terminal
 	.
 	└── projectname
@@ -328,17 +345,6 @@ def makeProjectTree(root, paths):
 			except:
 				raise
 	return True
-
-## Some quick test code 
-# projectTreeTemplate = [
-# 	'binary',
-# 	'include',
-# 	'libraries',
-# 	'source',
-# 	'tools',
-# 	'.git/modules/libraries']
-# makeProjectTree('hello',projectTreeTemplate)
-
 
 def deployMakefile(arguments):
 	"""
