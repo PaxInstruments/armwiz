@@ -329,6 +329,7 @@ def makeProjectTree(root, paths):
 		raise TypeError("Value for <root directory> must be a string. type({}) gives {}".format(root,type(root)))
 	try:
 		makePath(root)
+		call('cd {}; git init'.format(root),shell=True)
 	except FileExistsError:
 		raise FileExistsError("The directory {} already exists.".format(root))
 	if type(paths) is str:
@@ -355,11 +356,11 @@ def deployLibrary(targetProjectRootPath,library):
 	if not os.path.exists(targetProjectRootPath):
 		raise Exception("The target path {} does not exist.".format(targetProjectRootPath))
 	try:
-		call('rsync -ac libraries/{} {}/libraries/{}/'.format(library.git_name,targetProjectRootPath,library.git_name),shell=True)
+		call('rsync -ac libraries/{} {}/libraries/'.format(library.git_name,targetProjectRootPath,library.git_name),shell=True)
 	except:
 		raise Exception('ERROR using rsync to copy {}'.format(library.proper_name))
 	try:
-		call('rsync -ac .git/modules/libraries/{}/ {}/.git/modules/libraries/{}/'.format(library.git_name,targetProjectRootPath,library.git_name),shell=True)
+		call('rsync -ac .git/modules/libraries/{} {}/.git/modules/libraries/'.format(library.git_name,targetProjectRootPath,library.git_name),shell=True)
 		moduleFile = open('{}/.gitmodules'.format(targetProjectRootPath), 'a')
 		moduleFile.write("\n[submodule \"libraries/{}\"]\n".format(library.git_name))
 		moduleFile.write("\tpath = libraries/{}\n".format(library.git_name))

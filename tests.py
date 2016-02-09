@@ -28,7 +28,7 @@ else:
 ## Test makeProjectTree()
 print("Tests for makeProjectTree(): ")
 sampleProjectName = 'sampleProject'
-sampleProjectList = ['source','include','libraries']
+sampleProjectList = ['source','include','libraries','.git/modules/libraries']
 print("    - Generating project tree for {}.".format(sampleProjectName))
 if armwiz.makeProjectTree('{}/{}'.format(temporaryDirectoryPath,sampleProjectName),sampleProjectList):
 	print('    - {}/{} Okay'.format(temporaryDirectoryPath,sampleProjectName))
