@@ -317,11 +317,10 @@ def makeProjectTree(root, paths):
 
 	Example:
 	>>> makeProjectTree('~/myProject',['subDir1','subDir2'])
-	$ tree # Executed in terminal
-	.
-	└── projectname
-	    ├── subDir1
-	    └── subDir2
+	$ tree ~/myProject # Executed in terminal
+	~/myProject
+	├── subDir1
+	└── subDir2
 	"""
 	try:
 		assert type(root) is str
@@ -370,6 +369,9 @@ def deployExample(arguments):
 
 def deployLibrary(projectname,library):
 	"""Deploy a library class object"""
+	# TODO Deploy library to a specific path if the library does not exist there. Do
+	#      not use this to generate the overall project. This function can deploy a
+	#      library to any path.
 	print('Copying {} libraries... '.format(library.name), end="")
 	sys.stdout.flush()
 	makePath("{0}/{1}".format(projectname,library.libTargetDir))
