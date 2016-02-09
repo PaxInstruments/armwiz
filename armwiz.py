@@ -261,21 +261,36 @@ def parseArguments():
 	return parser
 
 def makePath(paths):
-	"""Create a directory a name or list of directories from an array.
+	"""Create a directory path from a string or list of strings and return True.
 	Usage:
 		makePath('<directory>')
 		makePath(['<directory 1>','<directory 2>',...,'<directory n>'])
+	Example:
+	>>> makePath(['temp/dir1','temp/hello/dir2'])
+	True
+	$ tree temp/
+	temp/
+	├── dir1
+	└── hello
+	    └── dir2
 	"""
 	try:
-		if type(paths) is str:
+		for entry in paths:
+			if not type(entry) is str:
+				raise TypeError("The type for each pasdfsdfth must be a string. type({}) gives {}".format(entry,type(entry)))
+		except TypeError:
+			raise TypeError("The type for each path must be a string. type({}) gives {}".format(entry,type(entry)))
+	if type(paths) is str:
+		try:
 			os.makedirs(paths)
-		elif type(paths) is list:
-			for path in paths:
-				os.makedirs(path)
-		else:
-			raise TypeError("Value must be a string or an array.")
-	except:
-		raise
+		except FileExistsError:
+			print('hello')
+			pass
+	elif type(paths) is list:
+		for path in paths:
+			makePath(path)
+	else:
+		raise TypeError("Value for each path must be a string or a list of strings. {} is not a string.".format(path))
 	return True
 
 def makeProjectTree(root, paths):
@@ -284,13 +299,12 @@ def makeProjectTree(root, paths):
 		makeProjectTree(<projectname>,<list of paths>)
 
 	Example:
-	>>> makeProjectTree(projectname,['subDir1','subDir2'])
+	>>> makeProjectTree('projectname',['subDir1','subDir2'])
 	$ tree # Executed in terminal
 	.
 	└── projectname
 	    ├── subDir1
 	    └── subDir2
-
 	"""
 	try:
 		assert type(root) is str
@@ -304,7 +318,7 @@ def makeProjectTree(root, paths):
 		try:
 			makePath("{}/{}".format(root,paths))
 		except FileExistsError:
-			raise FileExistsError("The directory {}/{} already exists.".format(root,paths))
+			pass
 		except:
 			raise
 	elif type(paths) is list:
