@@ -415,6 +415,29 @@ def deployLibrary(targetProjectRootPath,library):
 # 			raise
 # 	return
 
+def printConfigList(entryType,configurationFilePath):
+	"""Print a list of configuration entries and descriptions and return True."""
+	configurationInformation = configparser.ConfigParser()
+	try:
+		configurationInformation.read(configurationFilePath)
+	except:
+		raise
+	if len(configurationInformation.read(configurationFilePath)) == 0:
+		raise Exception("File '{}'' is empty or missing.".format(configurationFilePath))
+		return False
+	else:
+		print('Argument Name  Argument Description')
+		print('-------------  --------------------------------')
+		for entry in configurationInformation:
+			try:
+				if configurationInformation.get('{}'.format(entry),'item_type') == entryType:
+					print('{:<12}   {}'.format(configurationInformation.get(entry,'cli_argument'),configurationInformation.get(entry,'short_description')))
+			except configparser.NoOptionError:
+				pass
+			except:
+				raise
+		return True
+
 def main():
 	"""The main program loop"""
 	# TODO Add appropriate docstring
@@ -428,31 +451,13 @@ def main():
 			Print('Mysterious wizardly error. Return from whence you came!')
 			raise
 
+
 	if arguments.L == True:
-		try:
-			armwizConfigFileName = arguments.configfile
-			armwizConfig = configparser.ConfigParser()
-			armwizConfig.read(armwizConfigFileName)
-			assert len(armwizConfig.read(armwizConfigFileName)) !=0
-			# TODO Verify file is valid
-			# TODO Make a function for checking file presence and validity
-		except AssertionError:
-			# TODO Give an option to the use on how to fix this.
-			print("File '{}'' is empty or missing.".format(armwizConfigFileName))
-			raise
-		except:
-			raise
-		print('  -l <library>  Library Description')
-		print('  ------------  --------------------------------')
-		for entry in armwizConfig:
-			try:
-				if armwizConfig.get('{}'.format(entry),'item_type') == 'library':
-					# TODO Generate the righ justification value by looking at the config file
-					print('  {:<12}  {}'.format(armwizConfig.get(entry,'cli_argument'),armwizConfig.get(entry,'short_description')))
-			except configparser.NoOptionError:
-				pass
-			except:
-				raise
+		printConfigList('library',arguments.configfile)
+		exit()
+
+	if arguments.T == True:
+		printConfigList('target',arguments.configfile)
 		exit()
 
 	if arguments.projectname == None:
