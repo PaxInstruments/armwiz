@@ -35,17 +35,13 @@
 
 # Notes
 # =======
-# Files that go in the top level project directory:
-#   TODO main.c
-#   TODO Makefile
-#   Done STM32CubeF1/Drivers/CMSIS/Device/ST/STM32F1xx/Source/Templates/gcc/startup_stm32f103xe.s
-#   Done STM32CubeF1/Drivers/CMSIS/Device/ST/STM32F1xx/Source/Templates/gcc/linker/STM32F103XE_FLASH.ld
-#   TODO The config file
-#   TODO STM32CubeF1/Drivers/CMSIS/Device/ST/STM32F1xx/Source/Templates/system_stm32f1xx.c
 
-#   TODO hello/libraries/STM32CubeF1/Drivers/CMSIS/Device/ST/STM32F1xx/Include/stm32f1xx.h
 
-## Project TODO List
+
+# TODO List
+# =========
+# TODO Function: rsync a file from source to destination and return path to destination.
+#      call("rsync -ac <source> <destination>; cd <destination>",shell=true)
 # TODO Function copying the linker script should copy the correct linker script.
 # TODO Add a function to pull in the desired submodules as they are needed.
 # TODO Make git repo initilization command line option
@@ -86,6 +82,7 @@
 #      the same files.
 # TODO If armwiz is pointed to an existing project, it should add any
 #      specified libraries. Directly use git submodule add ...
+# TODO Add a proper license header
 
 ## Library-specific TODO List
 # TODO FreRTOS: Generate FreeRTOSConfig.h
@@ -117,7 +114,6 @@ __author__ = "Charles Edward Pax"
 __copyright__ = "Copyright 2016, Pax Instruments LLC"
 __date__ = "2016"
 __credits__ = ["Charles Pax"]
-# TODO Add a proper license header
 __license__ = "GPL"
 __version__ = "0.0.1"
 __maintainer__ = "Charles Pax"
@@ -131,36 +127,36 @@ __status__ = "Development"
 class Manufacturer(object):
 	# TODO Add appropriate docstring
 	"""The manufacturer of an object"""
-	def __init__(self,item_type,proper_name,website_url):
-		self.item_type = item_type
-		self.proper_name = proper_name
-		self.website_url = website_url
+	def __init__(self):
+		self.item_type = 'manufacturer'
+		self.proper_name = ''
+		self.website_url = ''
 		
 class Core(object):
 	# TODO Add appropriate docstring
 	"""The MCU core designed by ARM."""
-	def __init__(self,item_type,proper_name,chip_family,architecture,manufacturer,gcc_flag_mcpu):
-		self.item_type = item_type
-		self.proper_name = proper_name
-		self.chip_family = chip_family
-		self.architecture = architecture
-		self.manufacturer = manufacturer
-		self.gcc_flag_mcpu = gcc_flag_mcpu
+	def __init__(self):
+		self.item_type = 'core'
+		self.proper_name = ''
+		self.chip_family = ''
+		self.architecture = ''
+		self.manufacturer = ''
+		self.gcc_flag_mcpu = ''
 
 class Target(object):
 	# TODO Add appropriate docstring
 	"""The target for which armwiz will generate a project. This could be
 	a development board or just an MCU."""
-	def __init__(self,item_type,proper_name,mcu,cli_argument,core,manufacturer,short_description,long_description,website_url):
-		self.item_type = item_type
-		self.proper_name = proper_name
-		self.mcu = mcu
-		self.cli_argument = cli_argument
-		self.core = core
-		self.manufacturer = manufacturer
-		self.short_description = short_description
-		self.long_description = long_description
-		self.website_url = website_url
+	def __init__(self):
+		self.item_type = 'target'
+		self.proper_name = ''
+		self.mcu = ''
+		self.cli_argument = ''
+		self.core = ''
+		self.manufacturer = ''
+		self.short_description = ''
+		self.long_description = ''
+		self.website_url = ''
 
 class Library(object):
 	"""Libraries in git."""
