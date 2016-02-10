@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
 
+# Hello. I am armwiz, the most advanced ARM project generator. With
+# my software capabilities at your command you are among the most 
+# powerful embedder ARM wizards in the universe. Use your new 
+# powers wisely. -armwiz
 #                         ____
 #                       .'* *.'
 #                    __/_*_*(_
@@ -87,17 +91,17 @@
 # TODO FreRTOS: Generate FreeRTOSConfig.h
 # TODO Make FreeRTOS checkout the most recent version from the tags
 
-# Hello. I am armwiz, the most advanced ARM project generator. With
-# my software capabilities at your command you are among the most 
-# powerful embedder ARM wizards in the universe. Use your new 
-# powers wisely. -armwiz
-#
-
-
-# TODO: Add appropriate information to docstring.
 """
 Project template generator for ARM processors and development
 boards.
+
+Usage: armwiz.py [-h] [-p <projectname>] [-t <targetname>] [-l <libraryname>]
+                 [-L] [-T] [-w] [-v] [-q] [--version]
+Example:
+The example below will make a project named 'myProject' for the STM32F4 Discovery
+board and deploy within it the ARM mbed libraries.
+
+$ armwiz.py -p myProject -t stm32f4discovery --l mbed
 """
 ## Import standard libraries
 from subprocess import call
