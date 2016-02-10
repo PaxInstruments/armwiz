@@ -28,7 +28,7 @@ else:
 
 ## Test makeProjectTree()
 print("Tests for makeProjectTree(): ")
-sampleProjectName = 1#'sampleProject'
+sampleProjectName = 'sampleProject'
 sampleProjectList = ['source','include','libraries','.git/modules/libraries']
 print("    - Generating project tree for {}.".format(sampleProjectName))
 sys.stdout.flush()
@@ -78,6 +78,3 @@ for libraryToDeploy in libraryDeploymentList:
 			raise Exception('    - FAIL: Directory {} does not exist.')
 	except:
 		raise
-
-
-
