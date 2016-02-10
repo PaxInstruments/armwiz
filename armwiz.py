@@ -125,16 +125,16 @@ __status__ = "Development"
 #######################
 
 class Manufacturer(object):
-	# TODO Add appropriate docstring
 	"""The manufacturer of an object"""
+	# TODO Add appropriate docstring
 	def __init__(self):
 		self.item_type = 'manufacturer'
 		self.proper_name = ''
 		self.website_url = ''
 		
 class Core(object):
-	# TODO Add appropriate docstring
 	"""The MCU core designed by ARM."""
+	# TODO Add appropriate docstring
 	def __init__(self):
 		self.item_type = 'core'
 		self.proper_name = ''
@@ -144,9 +144,9 @@ class Core(object):
 		self.gcc_flag_mcpu = ''
 
 class Target(object):
-	# TODO Add appropriate docstring
 	"""The target for which armwiz will generate a project. This could be
 	a development board or just an MCU."""
+	# TODO Add appropriate docstring
 	def __init__(self):
 		self.item_type = 'target'
 		self.proper_name = ''
@@ -160,6 +160,7 @@ class Target(object):
 
 class Library(object):
 	"""Libraries in git."""
+	# TODO Add appropriate docstring
 	def __init__(self):
 		self.item_type = 'library'
 		self.proper_name = ''
@@ -169,16 +170,12 @@ class Library(object):
 		self.git_name = ''
 		self.git_url = ''
 		self.website_url = ''
-		# TODO The lines below should to into a function and not as a property of the object
-		# self.libTargetDir='{0}/{1}'.format('libraries',self.gitName)
-		# self.libSourceDir='{0}/{1}'.format('libraries',self.gitName)
 
 ##########################
 ## Function definitions ##
 ##########################
 def printWizard():
-	# TODO Add appropriate docstring
-	"""Prints the wizard and header and return True."""
+	"""Prints the wizard and returns True."""
 	print("                             ____                   ")
 	print("                          .'* *.'                   ")
 	print("                       __/_*_*(_                    ")
@@ -204,7 +201,6 @@ def printWizard():
 	return True
 
 def printHeader():
-	# TODO Add appropriate docstring
 	"""Prints the header and returns True."""
 	print("     █████╗ ██████╗ ███╗   ███╗██╗    ██╗██╗███████╗")
 	print("    ██╔══██╗██╔══██╗████╗ ████║██║    ██║██║╚══███╔╝")
@@ -216,14 +212,9 @@ def printHeader():
 	return True
 
 def parseArguments():
-	# TODO Make all the library options use a simple '-l' flag. The
-	#      flag will append that library to the list. A later unction will
-	#      iterate through the list, deploying each library.
-	# TODO Add appropriate docstring
-	"""Parses command line arguments. Returns array."""
+	"""Parses command line arguments and returns ArgumentParser object."""
 	parser = argparse.ArgumentParser(
 		description='Generate a template embedded ARM project.',
-		# TODO Put 'armwiz' into the standard program header informatin
 		epilog="armwiz {}".format(__date__))
 	parser.add_argument('-p','--projectname',
 		help='Specify project name via -p <projectname>',
@@ -246,6 +237,11 @@ def parseArguments():
 		help='List all targets available to the -t, --targetname argument',
 		action="store_true",
 		required=False)
+	parser.add_argument('-c','--configfile',
+		help='Specify a configuration file via -t <config file name>',
+		default='armwiz.config',
+		metavar="<config file name>",
+		required=False)
 	parser.add_argument('-w','--wizard',
 		help='Print the wizard',
 		action="store_true",
@@ -264,7 +260,7 @@ def parseArguments():
 	return parser
 
 def makePath(paths):
-	"""Create a directory path from a string or list of strings and return the path.
+	"""Create a directory path from a string or list of strings and return the same path or list.
 	Usage:
 		makePath('<directory>')
 		makePath(['<directory 1>','<directory 2>',...,'<directory n>'])
@@ -277,10 +273,13 @@ def makePath(paths):
 	└── hello
 	    └── dir2
 	"""
+	# TODO makePath() should verify the path it made exists and return the path it made, not
+	#      the path it was told to make.
+	# TODO Improve the error handling. It seems messy.
 	try:
 		for entry in paths:
 			if not type(entry) is str:
-				raise TypeError("The type for each pasdfsdfth must be a string. type({}) gives {}".format(entry,type(entry)))
+				raise TypeError("The type for each path must be a string. type({}) gives {}".format(entry,type(entry)))
 	except TypeError:
 		raise TypeError("The type for each path must be a string. type({}) gives {}".format(entry,type(entry)))
 	if type(paths) is str:
@@ -292,14 +291,17 @@ def makePath(paths):
 	elif type(paths) is list:
 		for path in paths:
 			makePath(path)
+		return paths
 	else:
 		raise TypeError("Value for each path must be a string or a list of strings. {} is not a string.".format(path))
 
 def makeTemporaryDirectory(directoryName):
-	"""Creates /tmp/<directoryName> and returns path.
+	"""Creates /tmp/armwiz/<number>/<directoryName> and returns path.
+
+	The <number> is iterated and will be the next lowest available number.
 
 	Usage:
-	myDir = makeTemporaryDirectory(<directoryName>)
+	myTempDir = makeTemporaryDirectory(<directoryName>)
 	"""
 	try:
 		iteratedDir = 0
@@ -307,7 +309,10 @@ def makeTemporaryDirectory(directoryName):
 			iteratedDir += 1
 		path = '/tmp/armwiz/{}/{}'.format(iteratedDir,directoryName)
 		makePath(path)
-		return path
+		if os.path.exists(path):
+			return path
+		else:
+			raise Exception('Could not make the path.')
 	except:
 		raise
 
@@ -323,13 +328,11 @@ def makeProjectTree(root, paths):
 	├── subDir1
 	└── subDir2
 	"""
-	try:
-		assert type(root) is str
-	except:
+	if not type(root) is str:
 		raise TypeError("Value for <root directory> must be a string. type({}) gives {}".format(root,type(root)))
 	try:
 		makePath(root)
-		call('cd {}; git init'.format(root),shell=True)
+		call('cd {}; git init -q'.format(root),shell=True)
 	except FileExistsError:
 		raise FileExistsError("The directory {} already exists.".format(root))
 	if type(paths) is str:
@@ -350,9 +353,7 @@ def makeProjectTree(root, paths):
 def deployLibrary(targetProjectRootPath,library):
 	"""Deploy library to a project directory
 	"""
-	# TODO Deploy library to a specific path if the library does not exist there. Do
-	#      not use this to generate the overall project. This function can deploy a
-	#      library to any path.
+	# TODO If library is not in the armwiz libraries directory, git submodule init into armwiz, then copy into project.
 	if not os.path.exists(targetProjectRootPath):
 		raise Exception("The target path {} does not exist.".format(targetProjectRootPath))
 	try:
@@ -377,18 +378,48 @@ def deployLibrary(targetProjectRootPath,library):
 	except:
 		raise
 
-def is_valid_file(parser, arg):
-    if not os.path.exists(arg):
-        parser.error("The file %s does not exist!" % arg)
-    else:
-        return open(arg, 'r')  # return an open file handle
+# def is_valid_file(parser, arg):
+	# TODO Add appropriate docstring
+# 	# TODO Understand this function. Maybe use the return open handler somewhere else.
+#     if not os.path.exists(arg):
+#         parser.error("The file {} does not exist!".format(arg))
+#     else:
+#         return open(arg, 'r')  # return an open file handle
+
+# def printLibraries(configFile):
+# 	"""Prints a list of available libraries and exit."""
+#	# TODO Make this function such that it can be called from main() to print the list.
+# 	try:
+# 		armwizConfigFileName = configFile
+# 		armwizConfig = configparser.ConfigParser()
+# 		armwizConfig.read(armwizConfigFileName)
+# 		assert len(armwizConfig.read(armwizConfigFileName)) !=0
+# 		# TODO Verify file is valid
+# 		# TODO Make a function for checking file presence and validity
+# 	except AssertionError:
+# 		# TODO Give an option to the use on how to fix this.
+# 		print("File '{}'' is empty or missing.".format(armwizConfigFileName))
+# 		raise
+# 	except:
+# 		raise
+# 	print('  -l <library>  Library Description')
+# 	print('  ------------  --------------------------------')
+# 	for entry in armwizConfig:
+# 		try:
+# 			if armwizConfig.get('{}'.format(entry),'item_type') == 'library':
+# 				# TODO Generate the righ justification value by looking at the config file
+# 				print('  {:<12}  {}'.format(armwizConfig.get(entry,'cli_argument'),armwizConfig.get(entry,'short_description')))
+# 		except configparser.NoOptionError:
+# 			pass
+# 		except:
+# 			raise
+# 	return
 
 def main():
-	# TODO Add appropriate docstring
 	"""The main program loop"""
+	# TODO Add appropriate docstring
 	parser = parseArguments()
 	arguments = parser.parse_args()
-
 
 	if arguments.wizard == True:
 		try:
@@ -399,25 +430,25 @@ def main():
 
 	if arguments.L == True:
 		try:
-			libraryConfigFileName = 'armwiz.config'
-			libraryConfig = configparser.ConfigParser()
-			libraryConfig.read('armwiz.config')
-			assert len(libraryConfig.read(libraryConfigFileName)) !=0
+			armwizConfigFileName = arguments.configfile
+			armwizConfig = configparser.ConfigParser()
+			armwizConfig.read(armwizConfigFileName)
+			assert len(armwizConfig.read(armwizConfigFileName)) !=0
 			# TODO Verify file is valid
 			# TODO Make a function for checking file presence and validity
 		except AssertionError:
 			# TODO Give an option to the use on how to fix this.
-			print("File '{0}'' is empty or missing.".format(libraryConfigFileName))
-			exit()
+			print("File '{}'' is empty or missing.".format(armwizConfigFileName))
+			raise
 		except:
 			raise
-			exit()
 		print('  -l <library>  Library Description')
 		print('  ------------  --------------------------------')
-		for library in libraryConfig:
+		for entry in armwizConfig:
 			try:
-				# TODO Generate the righ justification value by looking at the config file
-				print('  {:<12}  {}'.format(libraryConfig.get(library,'option'),libraryConfig.get(library,'short_description')))
+				if armwizConfig.get('{}'.format(entry),'item_type') == 'library':
+					# TODO Generate the righ justification value by looking at the config file
+					print('  {:<12}  {}'.format(armwizConfig.get(entry,'cli_argument'),armwizConfig.get(entry,'short_description')))
 			except configparser.NoOptionError:
 				pass
 			except:

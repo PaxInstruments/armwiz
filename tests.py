@@ -28,22 +28,24 @@ else:
 
 ## Test makeProjectTree()
 print("Tests for makeProjectTree(): ")
-sampleProjectName = 'sampleProject'
+sampleProjectName = 1#'sampleProject'
 sampleProjectList = ['source','include','libraries','.git/modules/libraries']
 print("    - Generating project tree for {}.".format(sampleProjectName))
 sys.stdout.flush()
-if armwiz.makeProjectTree('{}/{}'.format(temporaryDirectoryPath,sampleProjectName),sampleProjectList):
-	print('    - {}/{} Okay'.format(temporaryDirectoryPath,sampleProjectName))
-	for subdir in sampleProjectList:
-		print('    - {}/{}/{} '.format(temporaryDirectoryPath,sampleProjectName,subdir),end="")
-		if os.path.exists('{}/{}/{}'.format(temporaryDirectoryPath,sampleProjectName,subdir)):
-			print('Okay')
-		else:
-			print('FAIL')
-	temporaryProjectRootDirectory = "{}/{}".format(temporaryDirectoryPath,sampleProjectName)
-else:
-	print('FAIL')
-
+try:
+	if armwiz.makeProjectTree('{}/{}'.format(temporaryDirectoryPath,sampleProjectName),sampleProjectList):
+		print('    - {}/{} Okay'.format(temporaryDirectoryPath,sampleProjectName))
+		for subdir in sampleProjectList:
+			print('    - {}/{}/{} '.format(temporaryDirectoryPath,sampleProjectName,subdir),end="")
+			if os.path.exists('{}/{}/{}'.format(temporaryDirectoryPath,sampleProjectName,subdir)):
+				print('Okay')
+			else:
+				print('FAIL')
+		temporaryProjectRootDirectory = "{}/{}".format(temporaryDirectoryPath,sampleProjectName)
+	else:
+		print('FAIL')
+except:
+	raise
 ## Test deployLibrary()
 print("Tests for deployLibrary():")
 print("    - Load library config file... ",end="")
