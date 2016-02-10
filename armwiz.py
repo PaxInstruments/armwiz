@@ -88,6 +88,8 @@
 ## Library-specific TODO List
 # TODO FreRTOS: Generate FreeRTOSConfig.h
 # TODO Make FreeRTOS checkout the most recent version from the tags
+# TODO Ensure git knows about empty directories in the project tree by putting
+#      readmefiles in there or .git files if that makes sense.
 
 """
 Project template generator for ARM processors and development
@@ -305,7 +307,7 @@ def makePath(paths):
     else:
         raise TypeError("Value for each path must be a string or a list of strings. {} is not a string.".format(path))
 
-def makeTemporaryDirectory(directoryName):
+def makeTemporaryDirectory():
     """Creates /tmp/armwiz/<number>/<directoryName> and returns path.
 
     The <number> is iterated and will be the next lowest available number.
@@ -315,9 +317,9 @@ def makeTemporaryDirectory(directoryName):
     """
     try:
         iteratedDir = 0
-        while os.path.exists('/tmp/armwiz/{}/{}'.format(iteratedDir,directoryName)):
+        while os.path.exists('/tmp/armwiz/{}'.format(iteratedDir)):
             iteratedDir += 1
-        path = '/tmp/armwiz/{}/{}'.format(iteratedDir,directoryName)
+        path = '/tmp/armwiz/{}'.format(iteratedDir)
         makePath(path)
         if os.path.exists(path):
             return path
@@ -326,7 +328,7 @@ def makeTemporaryDirectory(directoryName):
     except:
         raise
 
-def makeProjectTree(root, paths):
+def makeProjectTree(root,paths):
     """ Create a directory tree inside of root directory and return True.
     Usage:
         makeProjectTree(<rootDirectory>,<list of paths>)
@@ -443,98 +445,47 @@ def main():
         parser.print_help()
         exit()
 
+    # Create temporary project directory
+    emptyTempDir = makeTemporaryDirectory()
+    projectTempDir = '{}/{}'.format(emptyTempDir,arguments.projectname)
+    print('Project temporary location: {}'.format(projectTempDir))
+    sys.stdout.flush()
+    projectSubdirectories = ['source','libraries','binary','.git/modules/libraries']
+    makeProjectTree(projectTempDir,projectSubdirectories)
 
-    # Load the libraries configuration file
-    # if arguments.library != None:
-    #     configurationInformation = configparser.ConfigParser()
-    #     try:
-    #         configurationInformation.read(configurationFilePath)
-    #     except:
-    #         raise
-    #     if len(configurationInformation.read(configurationFilePath)) == 0:
-    #         raise Exception("File '{}'' is empty or missing.".format(configurationFilePath))
-    #         return False
-    #     else:
-    #         for library in arguments.library:
-    #             try:
-    #                 configurationInformation.get('{}'.format(library),'option')
-    #             except configparser.NoOptionError :
-    #                 # TODO Give an option to the use on how to fix this.
-    #                 print('The library.config entry {0} has malformatted options.'.format(option))
-    #                 exit()
-    #             except configparser.NoSectionError :
-    #                 # TODO Give an option to the use on how to fix this.
-    #                 print("You chose a library called '{0}', but this is not a valid library option. Run 'armwiz -L' for a list of available libraries.".format(option))
-    #                 exit()
-    #             except:
-    #                 raise
-    #                 exit()
-
-
-    # Load the libraries configuration file
-    if arguments.library != None:
-        try:
-            libraryConfigFileName = 'libraries.config'
-            libraryConfig = configparser.ConfigParser()
-            libraryConfig.read('libraries.config')
-            assert len(libraryConfig.read(libraryConfigFileName)) !=0
-            # TODO Verify file is valid
-            # TODO Make a function for checking file presence and validity
-        except AssertionError:
-            # TODO Give an option to the use on how to fix this.
-            print("File '{0}'' is empty or missing.".format(libraryConfigFileName))
-            exit()
-        except:
-            raise
-            exit()
-        # Verify all libraries are valid options
-        for option in arguments.library:
-            try:
-                libraryConfig.get('{0}'.format(option),'option')
-            except configparser.NoOptionError :
-                # TODO Give an option to the use on how to fix this.
-                print('The library.config entry {0} has malformatted options.'.format(option))
-                exit()
-            except configparser.NoSectionError :
-                # TODO Give an option to the use on how to fix this.
-                print("You chose a library called '{0}', but this is not a valid library option. Run 'armwiz -L' for a list of available libraries.".format(option))
-                exit()
-            except:
-                raise
-                exit()
-
-    # If we get to this point, all the library options are valid
-
-    # TODO Add a function here to confirm all the options are valid
-    # TODO Add a function here to determine if the project can be made
-
-    if arguments.projectname:
-        try:
-            # TODO Verify the project name is valid
-            makeProjectDirectoryTree(arguments)
-        except:
-            # TODO makeProjectDirectoryTree() should actually give a proper error
-            print("The project '{0} could no be created. It probably already exists!".format(arguments.projectname))
-
-    if arguments.library != None:
-        for option in arguments.library:
-            optionName = libraryConfig.get(option,'option')
-            thisGitName = libraryConfig.get(option,'gitName')
-            thisGitURL = libraryConfig.get(option,'gitURL')
-            thisLibrary = Library(optionName,thisGitName,thisGitURL)
-            try:
-                deployLibrary(arguments.projectname,thisLibrary)
-            except:
-                print("Oops! I couldn't copy {0}".format(option))
-                raise
-
-    # This is specific for the STM32F103 board I'm using. This is temporary code
+    # Deploy libraries to temporary project directory
+    configurationInformation = configparser.ConfigParser()
     try:
-        print('Copying template files... ',end='')
-        copySTM103Files(arguments.projectname)
-        print('Okay')
+        configurationInformation.read(arguments.configfile)
     except:
         raise
+    if len(configurationInformation.read(arguments.configfile)) == 0:
+        raise Exception("File '{}' is empty or missing.".format(arguments.configfile))
+    else:
+        for libraryName in arguments.libraryname:
+            for section in configurationInformation:
+                thisLibrary = Library()
+                try:
+                    if configurationInformation.get('{}'.format(section),'cli_argument') == libraryName:
+                        sys.stdout.flush()
+                        thisLibrary.proper_name = configurationInformation.get('{}'.format(section),'proper_name')
+                        thisLibrary.git_name = configurationInformation.get('{}'.format(section),'git_name')
+                        thisLibrary.git_url = configurationInformation.get('{}'.format(section),'git_url')
+                        thisLibrary.website_url = configurationInformation.get('{}'.format(section),'website_url')
+                        try:
+                            print('Deploying {}/libraries/{}... '.format(projectTempDir,thisLibrary.git_name),end="")
+                            sys.stdout.flush()
+                            deployLibrary(projectTempDir,thisLibrary)
+                            if os.path.exists("{}/libraries/{}/".format(projectTempDir,thisLibrary.git_name)):
+                                print('Okay')
+                            else:
+                                raise Exception('    - FAIL: Directory {} does not exist.')
+                        except:
+                            raise
+                except configparser.NoOptionError:
+                    pass
+                except:
+                    raise
 
 if __name__ == "__main__":
     # TODO Read about python file structure
