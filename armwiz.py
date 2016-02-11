@@ -495,9 +495,11 @@ def main():
     # Copy GPIO example
     call('rsync -ac resources/gpio_example/ {}/examples/gpio_example'.format(projectTempDir),shell=True)
     call('cd {}/examples/gpio_example; ln -s ../../libraries libraries'.format(projectTempDir),shell=True)
+    linkerScript = 'libraries/mbed/libraries/mbed/targets/cmsis/TARGET_STM/TARGET_STM32F1/TARGET_NUCLEO_F103RB/TOOLCHAIN_GCC_ARM/STM32F103XB.ld'
+    call('cp {} {}/examples/gpio_example/myLinkerScript.ld'.format(linkerScript,projectTempDir),shell=True)
     #call('rsync -ac resources/gpio_template/ {}'.format(projectTempDir),shell=True)
 
-    # Move tempo project directory to the final location
+    # Move temporary project directory to the final location
     call('mv {} {}'.format(projectTempDir,arguments.output),shell=True)
 
     # TODO Write readme.md files to the temporary project directory tree folders

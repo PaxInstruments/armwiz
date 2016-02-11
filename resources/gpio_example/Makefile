@@ -1,6 +1,8 @@
 # User Configuration ====================================================#
 PROJECT_NAME=gpio_example
 MAIN_SOURCE_FILE=main.c
+LINKER_SCRIPT=libraries/mbed/libraries/mbed/targets/cmsis/TARGET_STM/TARGET_STM32F1/TARGET_NUCLEO_F103RB/TOOLCHAIN_GCC_ARM/STM32F103XB.ld
+#LINKER_SCRIPT=stm32_flash.ld
 
 # Output files ==========================================================#
 EXECUTABLE=$(PROJECT_NAME).elf
@@ -15,7 +17,7 @@ CFLAGS=-Wall -g -mlittle-endian -mthumb -nostdlib -ffreestanding
 CFLAGS+=-mcpu=cortex-m3
 CFLAGS+=-D USE_STDPERIPH_DRIVER
 CFLAGS+=-D STM32F10X_HD
-CFLAGS+=-Wl,-T,stm32_flash.ld
+CFLAGS+=-Wl,-T,$(LINKER_SCRIPT)
 
 # Include Files =========================================================#
 CFLAGS+=-I./
