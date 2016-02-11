@@ -1,8 +1,7 @@
 # User Configuration ====================================================#
 PROJECT_NAME=gpio_example
 MAIN_SOURCE_FILE=main.c
-LINKER_SCRIPT=libraries/mbed/libraries/mbed/targets/cmsis/TARGET_STM/TARGET_STM32F1/TARGET_NUCLEO_F103RB/TOOLCHAIN_GCC_ARM/STM32F103XB.ld
-#LINKER_SCRIPT=stm32_flash.ld
+LINKER_SCRIPT=myLinkerScript.ld
 
 # Output files ==========================================================#
 EXECUTABLE=$(PROJECT_NAME).elf
@@ -13,10 +12,19 @@ CC=arm-none-eabi-gcc
 OBJCOPY=arm-none-eabi-objcopy
 
 # Compiler Flags ========================================================#
-CFLAGS=-Wall -g -mlittle-endian -mthumb -nostdlib -ffreestanding
-CFLAGS+=-mcpu=cortex-m3
-CFLAGS+=-D USE_STDPERIPH_DRIVER
+# Detailed arm-none-eabi-gcc compiler documentation can be found at
+# https://www.mankier.com/1/arm-none-eabi-gcc
+
+# Pre processor flags: The -D flag defines a compiler macro. This is the same as
+# a '#define' statement in as included source file. For example, using
+# '-D DEBUG_DISABLE' is the same as having '#define DEBUG_DISABLE' in your
+# included source source code. Macros can also be defined with the '-D MY_VALUE=1'
+# notation, which is the same as having '#define MY_VALUE=1' in an included source file.
+CFLAGS=-D USE_STDPERIPH_DRIVER
 CFLAGS+=-D STM32F10X_HD
+
+CFLAGS+=-Wall -g -mlittle-endian -mthumb -nostdlib -ffreestanding
+CFLAGS+=-mcpu=cortex-m3
 CFLAGS+=-Wl,-T,$(LINKER_SCRIPT)
 
 # Include Files =========================================================#
