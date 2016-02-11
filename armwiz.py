@@ -2,7 +2,7 @@
 
 # Hello. I am armwiz, the most advanced ARM project generator. With
 # my software capabilities at your command you are among the most
-# powerful embedder ARM wizards in the universe. Use your new
+# powerful embedded ARM wizards in the universe. Use your new
 # powers wisely. -armwiz
 #                         ____
 #                       .'* *.'
