@@ -34,7 +34,7 @@ CSOURCES+=$(shell find -L libraries/STM32CubeF1/Drivers/STM32F1xx_HAL_Driver -na
 # CSOURCES+=$(shell find -L libraries/STM32CubeF1/Drivers/CMSIS -name '*.c' | grep -iv template | grep -iv example)
 # Find library header directories
 INC+=$(shell find -L libraries/STM32CubeF1/Drivers/STM32F1xx_HAL_Driver  -name '*.h' -exec dirname {} \; | uniq | grep -iv template | grep -iv example)
-INC+=$(shell find -L libraries/STM32CubeF1/Drivers/CMSIS/Device/ST/STM32F1xx -name '*.h' -exec dirname {} \; | uniq | grep -iv template | grep -iv example)
+# INC+=$(shell find -L libraries/STM32CubeF1/Drivers/CMSIS/Device/ST/STM32F1xx -name '*.h' -exec dirname {} \; | uniq | grep -iv template | grep -iv example)
 # INC+=$(shell find -L libraries/STM32CubeF1/Drivers/BSP/STM32F1xx_Nucleo -name '*.h' -exec dirname {} \; | uniq | grep -iv template | grep -iv example)
 INC+=$(shell find -L libraries/STM32CubeF1/Drivers/CMSIS -name '*.h' -exec dirname {} \; | uniq | grep -iv template | grep -iv example)
 
