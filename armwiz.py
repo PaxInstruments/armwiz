@@ -494,7 +494,10 @@ def main():
 
     # Copy GPIO example
     call('rsync -ac resources/gpio_example/ {}/examples/gpio_example'.format(projectTempDir),shell=True)
+    # call('rsync -ac libraries/STM32CubeF1/Projects/STM32F103RB-Nucleo/Examples/GPIO/GPIO_IOToggle/ {}/examples/GPIO_IOToggle/'.format(projectTempDir),shell=True)
+    call('rsync -ac resources/stm32/ {}/examples/stm32'.format(projectTempDir),shell=True)
     call('cd {}/examples/gpio_example; ln -s ../../libraries libraries'.format(projectTempDir),shell=True)
+    call('cd {}/examples/stm32; ln -s ../../libraries libraries'.format(projectTempDir),shell=True)
     linkerScript = 'libraries/mbed/libraries/mbed/targets/cmsis/TARGET_STM/TARGET_STM32F1/TARGET_NUCLEO_F103RB/TOOLCHAIN_GCC_ARM/STM32F103XB.ld'
     call('cp {} {}/examples/gpio_example/myLinkerScript.ld'.format(linkerScript,projectTempDir),shell=True)
     #call('rsync -ac resources/gpio_template/ {}'.format(projectTempDir),shell=True)
