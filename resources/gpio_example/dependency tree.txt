@@ -1,0 +1,22 @@
+./
++-- main.c (./)
+|    +-- stm32f10x.h (cmsis-support/)
+|	    |	+-- core_cm3.h (cmsis-libraries)
+|	    |	|	+-- <stdint.h> (standard C library)
+|	    |	|	+-- <intrinsics.h> (Include IAR intrinsics library only #ifdef __ICCARM__ )
+|	    |	|
+|	    |	+-- system_stm32f10x.h (cmsis-support/
+|	    |	+-- <stdint.h> (standard C library)
+|	    |	
+|	    +-- stm32f10x_conf.h (./)
+|	    	+-- stm32f10x_gpio.h (stm32-libraries/inc/)
+|	    	|	+-- stm32f10x.h (cmsis-support/)
+|	    	|
+|	    	+-- stm32f10x_rcc.h (stm32-libraries/inc/)
+|	    	|	+-- stm32f10x.h (cmsis-support/)
+|	    	|
+|	    	+-- misc.h (stm32-libraries/inc/)
+|	    		+-- stm32f10x.h (cmsis-support/)
++-- startup_stm32f10x_hd.s
++-- Makefile
++-- stm32_flash.ld

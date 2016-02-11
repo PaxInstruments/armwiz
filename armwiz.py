@@ -247,6 +247,11 @@ def parseArguments():
         default='armwiz.config',
         metavar="<config file name>",
         required=False)
+    parser.add_argument('-o','--output',
+        help='Target location -o <target location>',
+        default='./',
+        metavar="<target location>",
+        required=False)
     parser.add_argument('-w','--wizard',
         help='Print the wizard',
         action="store_true",
@@ -450,7 +455,7 @@ def main():
     projectTempDir = '{}/{}'.format(emptyTempDir,arguments.projectname)
     print('Project temporary location: {}'.format(projectTempDir))
     sys.stdout.flush()
-    projectSubdirectories = ['source','libraries','binary','.git/modules/libraries']
+    projectSubdirectories = ['source','libraries','binary','examples','.git/modules/libraries']
     makeProjectTree(projectTempDir,projectSubdirectories)
 
     # Deploy libraries to temporary project directory
@@ -486,6 +491,22 @@ def main():
                     pass
                 except:
                     raise
+
+    # Copy GPIO example
+    call('rsync -ac resources/gpio_example/ {}/examples/gpio_example'.format(projectTempDir),shell=True)
+
+    # Move tempo project directory to the final location
+    call('mv {} {}'.format(projectTempDir,arguments.output),shell=True)
+
+    # TODO Write readme.md files to the temporary project directory tree folders
+    # TODO Generate Makefile
+    # TODO Copy Makefile to project temp directory
+    # TODO Generate linker script
+    # TODO Copy linker scrip to project temp directory
+    # TODO Generate hello world code
+    # TODO Copy hello worl code to temp project directory
+    # TODO mv temporary froject directory to destination
+
 
 if __name__ == "__main__":
     # TODO Read about python file structure
