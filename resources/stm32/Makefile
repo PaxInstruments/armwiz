@@ -29,7 +29,7 @@ CXXSOURCES=$(shell find -L $(SRCDIR) -name '*.cpp')
 INC=$(shell find -L $(INCDIR) -name '*.h' -exec dirname {} \; | uniq)
 # Find library source Files
 CSOURCES+=$(shell find -L libraries/STM32CubeF1/Drivers/STM32F1xx_HAL_Driver -name '*.c' | grep -iv template | grep -iv example)
-CSOURCES+=$(shell find -L libraries/STM32CubeF1/Drivers/CMSIS/Device/ST/STM32F1xx -name '*.c' | grep -iv template | grep -iv example)
+# CSOURCES+=$(shell find -L libraries/STM32CubeF1/Drivers/CMSIS/Device/ST/STM32F1xx -name '*.c' | grep -iv template | grep -iv example)
 # CSOURCES+=$(shell find -L libraries/STM32CubeF1/Drivers/BSP/STM32F1xx_Nucleo -name '*.c' | grep -iv template | grep -iv example)
 # CSOURCES+=$(shell find -L libraries/STM32CubeF1/Drivers/CMSIS -name '*.c' | grep -iv template | grep -iv example)
 # Find library header directories
@@ -63,7 +63,7 @@ MCFLAGS=-mcpu=cortex-m3 -mthumb -mlittle-endian \
 #####
 # DEFS=-DUSE_STDPERIPH_DRIVER
 DEFS+=-DSTM32F103xB
-DEFS+=-DARM_MATH_CM3
+# DEFS+=-DARM_MATH_CM3
 CFLAGS=-c $(MCFLAGS) $(DEFS) $(INCLUDES)
 CXXFLAGS=-c $(MCFLAGS) $(DEFS) $(INCLUDES) -std=c++11
 # LINKER FLAGS
