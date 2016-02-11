@@ -494,6 +494,7 @@ def main():
 
     # Copy GPIO example
     call('rsync -ac resources/gpio_example/ {}/examples/gpio_example'.format(projectTempDir),shell=True)
+    call('rsync -ac resources/gpio_template/ {}'.format(projectTempDir),shell=True)
 
     # Move tempo project directory to the final location
     call('mv {} {}'.format(projectTempDir,arguments.output),shell=True)
