@@ -483,17 +483,32 @@ def main():
     # # call('rsync -ac libraries/STM32CubeF1/Projects/STM32F103RB-Nucleo/Examples/GPIO/GPIO_IOToggle/ {}/examples/GPIO_IOToggle/'.format(projectTempDir),shell=True)
     # #call('rsync -ac resources/gpio_template/ {}'.format(projectTempDir),shell=True)
 
+
+    # This is the blinky test copy
     exampleName = 'blinky'
     mainDotC = 'resources/stm32/source/main.c'
     mainDotH = 'resources/stm32/include/main.h'
-    startupFile = 'resources/stm32/source/startup_stm32f103xb.s'
+    startupFile = 'libraries/STM32CubeF1/Drivers/CMSIS/Device/ST/STM32F1xx/Source/Templates/gcc/startup_stm32f103xb.s'
     itDotC = 'resources/stm32/source/stm32f1xx_it.c'
     itDotH = 'resources/stm32/include/stm32f1xx_it.h'
-    systemFile = 'resources/stm32/source/system_stm32f1xx.c'
-    halConf = 'resources/stm32/include/stm32f1xx_hal_conf.h'
-    linkerFile = 'resources/stm32/STM32F103VB_FLASH.ld'
+    systemFile = 'libraries/STM32CubeF1/Drivers/CMSIS/Device/ST/STM32F1xx/Source/Templates/system_stm32f1xx.c'
+    halConf = 'libraries/mbed/libraries/mbed/targets/cmsis/TARGET_STM/TARGET_STM32F1/stm32f1xx_hal_conf.h'
+    linkerFile = 'libraries/STM32CubeF1/Projects/STM32F103RB-Nucleo/Templates/TrueSTUDIO/STM32F103RB_Nucleo/STM32F103VB_FLASH.ld'
     makefile = 'resources/stm32/Makefile'
     readme = 'resources/stm32/readme.txt'
+
+    # # This copy of the blinky paths works
+    # exampleName = 'blinky'
+    # mainDotC = 'resources/stm32/source/main.c'
+    # mainDotH = 'resources/stm32/include/main.h'
+    # startupFile = 'resources/stm32/source/startup_stm32f103xb.s'
+    # itDotC = 'resources/stm32/source/stm32f1xx_it.c'
+    # itDotH = 'resources/stm32/include/stm32f1xx_it.h'
+    # systemFile = 'resources/stm32/source/system_stm32f1xx.c'
+    # halConf = 'resources/stm32/include/stm32f1xx_hal_conf.h'
+    # linkerFile = 'resources/stm32/STM32F103VB_FLASH.ld'
+    # makefile = 'resources/stm32/Makefile'
+    # readme = 'resources/stm32/readme.txt'
 
     # Deploy blinky example
     exampleSubfolders = ['binary','include','source']
