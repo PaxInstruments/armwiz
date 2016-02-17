@@ -55,20 +55,11 @@
 # TODO OPTIONS GIT: If git is not present, do not initialize a git repo
 # TODO OPTIONS GIT: Function: git submodule add a module into the armwiz git repo
 # TODO If armwiz is pointed to an existing project, it should add any
-#      specified libraries. Directly use git submodule add ...
+#      specified libraries. Directly use git submodule add command. Maybe point
+#      to a local repo to clone, then change to the github repo.
+# TODO Can I combine the core, target, and other classes together? Maybe have a
+#      parent class.
 
-"""
-Project template generator for ARM processors and development
-boards.
-
-Usage: armwiz.py [-h] [-p <projectname>] [-t <targetname>] [-l <libraryname>]
-                 [-L] [-T] [-w] [-v] [-q] [--version]
-Example:
-The example below will make a project named 'myProject' for the STM32F4 Discovery
-board and deploy within it the ARM mbed libraries.
-
-$ armwiz.py -p myProject -t stm32f4discovery --l mbed
-"""
 ## Import standard libraries
 from subprocess import call
 import os
@@ -227,6 +218,11 @@ def parseArguments():
         default=False,
         action="store_true",
         required=False)
+    parser.add_argument('-g','--git',
+        help='Initialize project as a git repository. Default is True. Ignored if git is not present.',
+        default=True,
+        action="store_true",
+        required=False)
     parser.add_argument('-v','--verbose',
         help='Print extra information to the terminal',
         action="store_true",
@@ -279,12 +275,12 @@ def makePath(paths):
         raise TypeError("Value for each path must be a string or a list of strings. {} is not a string.".format(path))
 
 def makeTemporaryDirectory():
-    """Creates /tmp/armwiz/<number>/<directoryName> and returns path.
+    """Creates /tmp/armwiz/<number> and returns path.
 
-    The <number> is iterated and will be the next lowest available number.
+    The <number> is iterated and will be the lowest available positive integer.
 
     Usage:
-    myTempDir = makeTemporaryDirectory(<directoryName>)
+    myTempDir = makeTemporaryDirectory()
     """
     try:
         iteratedDir = 0
@@ -311,6 +307,9 @@ def makeProjectTree(root,paths):
     ├── subDir1
     └── subDir2
     """
+    # TODO Do something such that git knows to also track the empty directories.
+    #      Add a .git file to each directory or use other method.
+    # TODO Use the --git flag (arguments.git) to enable/disable git commands.
     if not type(root) is str:
         raise TypeError("Value for <root directory> must be a string. type({}) gives {}".format(root,type(root)))
     try:
@@ -337,6 +336,7 @@ def deployLibrary(targetProjectRootPath,library):
     """Deploy library to a project directory
     """
     # TODO If library is not in the armwiz libraries directory, git submodule init into armwiz, then copy into project.
+    # TODO Use the --git flag (arguments.git) to enable/disable git commands.
     if not os.path.exists(targetProjectRootPath):
         raise Exception("The target path {} does not exist.".format(targetProjectRootPath))
     try:
@@ -362,7 +362,7 @@ def deployLibrary(targetProjectRootPath,library):
         raise
 
 # def is_valid_file(parser, arg):
-    # TODO Add appropriate docstring
+#     # TODO Add appropriate docstring
 #     # TODO Understand this function. Maybe use the return open handler somewhere else.
 #     if not os.path.exists(arg):
 #         parser.error("The file {} does not exist!".format(arg))
@@ -393,7 +393,18 @@ def printConfigList(entryType,configurationFilePath):
         return True
 
 def main():
-    """The main program."""
+    """
+    armwiz project template generator for ARM processors and development
+    boards.
+
+    Usage: armwiz.py [-h] [-p <projectname>] [-t <targetname>] [-l <libraryname>]
+                     [-L] [-T] [-w] [-v] [-q] [--version]
+    Example:
+    The example below will make a project named 'myProject' for the STM32F4 Discovery
+    board and deploy within it the ARM mbed libraries.
+
+    $ armwiz.py -p myProject -t stm32f4discovery --l mbed
+    """
 
     # Parse all command line arguments
     parser = parseArguments()
@@ -458,15 +469,34 @@ def main():
                 except:
                     raise
 
-    # Copy GPIO example
-    call('rsync -ac resources/gpio_example/ {}/examples/gpio_example'.format(projectTempDir),shell=True)
-    # call('rsync -ac libraries/STM32CubeF1/Projects/STM32F103RB-Nucleo/Examples/GPIO/GPIO_IOToggle/ {}/examples/GPIO_IOToggle/'.format(projectTempDir),shell=True)
-    call('rsync -ac resources/stm32/ {}/examples/stm32'.format(projectTempDir),shell=True)
-    call('cd {}/examples/gpio_example; ln -s ../../libraries libraries'.format(projectTempDir),shell=True)
-    call('cd {}/examples/stm32; ln -s ../../libraries libraries'.format(projectTempDir),shell=True)
-    linkerScript = 'libraries/mbed/libraries/mbed/targets/cmsis/TARGET_STM/TARGET_STM32F1/TARGET_NUCLEO_F103RB/TOOLCHAIN_GCC_ARM/STM32F103XB.ld'
-    call('cp {} {}/examples/gpio_example/myLinkerScript.ld'.format(linkerScript,projectTempDir),shell=True)
-    #call('rsync -ac resources/gpio_template/ {}'.format(projectTempDir),shell=True)
+    # # Copy GPIO example
+    # call('rsync -ac resources/gpio_example/ {}/examples/gpio_example'.format(projectTempDir),shell=True)
+    # call('cd {}/examples/gpio_example; ln -s ../../libraries libraries'.format(projectTempDir),shell=True)
+    # linkerScript = 'libraries/mbed/libraries/mbed/targets/cmsis/TARGET_STM/TARGET_STM32F1/TARGET_NUCLEO_F103RB/TOOLCHAIN_GCC_ARM/STM32F103XB.ld'
+    # call('cp {} {}/examples/gpio_example/myLinkerScript.ld'.format(linkerScript,projectTempDir),shell=True)
+    # # Copy stm32 example
+    # call('rsync -ac resources/stm32/ {}/examples/stm32'.format(projectTempDir),shell=True)
+    # call('cd {}/examples/stm32; ln -s ../../libraries libraries'.format(projectTempDir),shell=True)
+    # linkerScript = 'libraries/mbed/libraries/mbed/targets/cmsis/TARGET_STM/TARGET_STM32F1/TARGET_NUCLEO_F103RB/TOOLCHAIN_GCC_ARM/STM32F103XB.ld'
+    # call('cp {} {}/examples/stm32/myLinkerScript.ld'.format(linkerScript,projectTempDir),shell=True)
+    # # Other crap
+    # # call('rsync -ac libraries/STM32CubeF1/Projects/STM32F103RB-Nucleo/Examples/GPIO/GPIO_IOToggle/ {}/examples/GPIO_IOToggle/'.format(projectTempDir),shell=True)
+    # #call('rsync -ac resources/gpio_template/ {}'.format(projectTempDir),shell=True)
+
+    # Deploy blinky example
+    exampleSubfolders = ['binary','include','source']
+    makeProjectTree("{}/examples/blinky".format(projectTempDir),exampleSubfolders)
+    call('cd {}/examples/blinky; ln -s ../../libraries libraries'.format(projectTempDir),shell=True)
+    call('cp resources/stm32/source/main.c {}/examples/blinky/source/'.format(projectTempDir),shell=True)
+    call('cp resources/stm32/source/startup_stm32f103xb.s {}/examples/blinky/source/'.format(projectTempDir),shell=True)
+    call('cp resources/stm32/source/stm32f1xx_it.c {}/examples/blinky/source/'.format(projectTempDir),shell=True)
+    call('cp resources/stm32/source/system_stm32f1xx.c {}/examples/blinky/source/'.format(projectTempDir),shell=True)
+    call('cp resources/stm32/include/main.h {}/examples/blinky/include/'.format(projectTempDir),shell=True)
+    call('cp resources/stm32/include/stm32f1xx_hal_conf.h {}/examples/blinky/include/'.format(projectTempDir),shell=True)
+    call('cp resources/stm32/include/stm32f1xx_it.h {}/examples/blinky/include/'.format(projectTempDir),shell=True)
+    call('cp resources/stm32/Makefile {}/examples/blinky/'.format(projectTempDir),shell=True)
+    call('cp resources/stm32/readme.txt {}/examples/blinky/'.format(projectTempDir),shell=True)
+    call('cp resources/stm32/STM32F103VB_FLASH.ld {}/examples/blinky/'.format(projectTempDir),shell=True)
 
     # Move temporary project directory to the final location
     call('mv {} {}'.format(projectTempDir,arguments.output),shell=True)
