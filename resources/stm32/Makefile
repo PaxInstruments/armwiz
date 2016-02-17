@@ -9,6 +9,8 @@
 # Overview =================================================================== #
 # This Makefile
 
+# libraries ================================================================== #
+STM32CUBE_VERSION=STM32CubeF1
 
 # GNU ARM Embedded Toolchain
 # Instruction for installing this toolchain can be found at ___________.
@@ -41,15 +43,15 @@ CXXSOURCES=$(shell find -L $(SRCDIR) -name '*.cpp')
 # Find project header directories
 INC=$(shell find -L $(INCDIR) -name '*.h' -exec dirname {} \; | uniq)
 # Find library source Files
-CSOURCES+=$(shell find -L libraries/STM32CubeF1/Drivers/STM32F1xx_HAL_Driver -name '*.c' | grep -iv template | grep -iv example)
-# CSOURCES+=$(shell find -L libraries/STM32CubeF1/Drivers/CMSIS/Device/ST/STM32F1xx -name '*.c' | grep -iv template | grep -iv example)
-# CSOURCES+=$(shell find -L libraries/STM32CubeF1/Drivers/BSP/STM32F1xx_Nucleo -name '*.c' | grep -iv template | grep -iv example)
-# CSOURCES+=$(shell find -L libraries/STM32CubeF1/Drivers/CMSIS -name '*.c' | grep -iv template | grep -iv example)
+CSOURCES+=$(shell find -L libraries/${STM32CUBE_VERSION}/Drivers/STM32F*xx_HAL_Driver -name '*.c' | grep -iv template | grep -iv example)
+# CSOURCES+=$(shell find -L libraries/${STM32CUBE_VERSION}/Drivers/CMSIS/Device/ST/STM32F1xx -name '*.c' | grep -iv template | grep -iv example)
+# CSOURCES+=$(shell find -L libraries/${STM32CUBE_VERSION}/Drivers/BSP/STM32F1xx_Nucleo -name '*.c' | grep -iv template | grep -iv example)
+# CSOURCES+=$(shell find -L libraries/${STM32CUBE_VERSION}/Drivers/CMSIS -name '*.c' | grep -iv template | grep -iv example)
 # Find library header directories
-INC+=$(shell find -L libraries/STM32CubeF1/Drivers/STM32F1xx_HAL_Driver  -name '*.h' -exec dirname {} \; | uniq | grep -iv template | grep -iv example)
-# INC+=$(shell find -L libraries/STM32CubeF1/Drivers/CMSIS/Device/ST/STM32F1xx -name '*.h' -exec dirname {} \; | uniq | grep -iv template | grep -iv example)
-# INC+=$(shell find -L libraries/STM32CubeF1/Drivers/BSP/STM32F1xx_Nucleo -name '*.h' -exec dirname {} \; | uniq | grep -iv template | grep -iv example)
-INC+=$(shell find -L libraries/STM32CubeF1/Drivers/CMSIS -name '*.h' -exec dirname {} \; | uniq | grep -iv template | grep -iv example)
+INC+=$(shell find -L libraries/${STM32CUBE_VERSION}/Drivers/STM32F*xx_HAL_Driver  -name '*.h' -exec dirname {} \; | uniq | grep -iv template | grep -iv example)
+# INC+=$(shell find -L libraries/${STM32CUBE_VERSION}/Drivers/CMSIS/Device/ST/STM32F1xx -name '*.h' -exec dirname {} \; | uniq | grep -iv template | grep -iv example)
+# INC+=$(shell find -L libraries/${STM32CUBE_VERSION}/Drivers/BSP/STM32F1xx_Nucleo -name '*.h' -exec dirname {} \; | uniq | grep -iv template | grep -iv example)
+INC+=$(shell find -L libraries/${STM32CUBE_VERSION}/Drivers/CMSIS -name '*.h' -exec dirname {} \; | uniq | grep -iv template | grep -iv example)
 
 # Include the include directories
 INCLUDES=$(INC:%=-I%)
