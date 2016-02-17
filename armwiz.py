@@ -483,20 +483,32 @@ def main():
     # # call('rsync -ac libraries/STM32CubeF1/Projects/STM32F103RB-Nucleo/Examples/GPIO/GPIO_IOToggle/ {}/examples/GPIO_IOToggle/'.format(projectTempDir),shell=True)
     # #call('rsync -ac resources/gpio_template/ {}'.format(projectTempDir),shell=True)
 
+    exampleName = 'blinky'
+    mainDotC = 'resources/stm32/source/main.c'
+    mainDotH = 'resources/stm32/include/main.h'
+    startupFile = 'resources/stm32/source/startup_stm32f103xb.s'
+    itDotC = 'resources/stm32/source/stm32f1xx_it.c'
+    itDotH = 'resources/stm32/include/stm32f1xx_it.h'
+    systemFile = 'resources/stm32/source/system_stm32f1xx.c'
+    halConf = 'resources/stm32/include/stm32f1xx_hal_conf.h'
+    linkerFile = 'resources/stm32/STM32F103VB_FLASH.ld'
+    makefile = 'resources/stm32/Makefile'
+    readme = 'resources/stm32/readme.txt'
+
     # Deploy blinky example
     exampleSubfolders = ['binary','include','source']
-    makeProjectTree("{}/examples/blinky".format(projectTempDir),exampleSubfolders)
-    call('cd {}/examples/blinky; ln -s ../../libraries libraries'.format(projectTempDir),shell=True)
-    call('cp resources/stm32/source/main.c {}/examples/blinky/source/'.format(projectTempDir),shell=True)
-    call('cp resources/stm32/source/startup_stm32f103xb.s {}/examples/blinky/source/'.format(projectTempDir),shell=True)
-    call('cp resources/stm32/source/stm32f1xx_it.c {}/examples/blinky/source/'.format(projectTempDir),shell=True)
-    call('cp resources/stm32/source/system_stm32f1xx.c {}/examples/blinky/source/'.format(projectTempDir),shell=True)
-    call('cp resources/stm32/include/main.h {}/examples/blinky/include/'.format(projectTempDir),shell=True)
-    call('cp resources/stm32/include/stm32f1xx_hal_conf.h {}/examples/blinky/include/'.format(projectTempDir),shell=True)
-    call('cp resources/stm32/include/stm32f1xx_it.h {}/examples/blinky/include/'.format(projectTempDir),shell=True)
-    call('cp resources/stm32/Makefile {}/examples/blinky/'.format(projectTempDir),shell=True)
-    call('cp resources/stm32/readme.txt {}/examples/blinky/'.format(projectTempDir),shell=True)
-    call('cp resources/stm32/STM32F103VB_FLASH.ld {}/examples/blinky/'.format(projectTempDir),shell=True)
+    makeProjectTree("{}/examples/{}".format(projectTempDir,exampleName),exampleSubfolders)
+    call('cd {}/examples/{}; ln -s ../../libraries libraries'.format(projectTempDir,exampleName),shell=True)
+    call('cp {} {}/examples/{}/source/'.format(mainDotC,projectTempDir,exampleName),shell=True)
+    call('cp {} {}/examples/{}/include/'.format(mainDotH,projectTempDir,exampleName),shell=True)
+    call('cp {} {}/examples/{}/source/'.format(startupFile,projectTempDir,exampleName),shell=True)
+    call('cp {} {}/examples/{}/source/'.format(itDotC,projectTempDir,exampleName),shell=True)
+    call('cp {} {}/examples/{}/include/'.format(itDotH,projectTempDir,exampleName),shell=True)
+    call('cp {} {}/examples/{}/source/'.format(systemFile,projectTempDir,exampleName),shell=True)
+    call('cp {} {}/examples/{}/include/'.format(halConf,projectTempDir,exampleName),shell=True)
+    call('cp {} {}/examples/{}/'.format(makefile,projectTempDir,exampleName),shell=True)
+    call('cp {} {}/examples/{}/'.format(readme,projectTempDir,exampleName),shell=True)
+    call('cp {} {}/examples/{}/'.format(linkerFile,projectTempDir,exampleName),shell=True)
 
     # Move temporary project directory to the final location
     call('mv {} {}'.format(projectTempDir,arguments.output),shell=True)
