@@ -7,23 +7,80 @@
 #                               by Pax Instruments
 
 # Overview =================================================================== #
-# This Makefile
+# This Makefile...
 
-# libraries ================================================================== #
+# Project Specific Definitions =============================================== #
+# This section should not need to be changed if your initial project generation
+# options continue to meet your needs. If you change your target, you may need to
+# modify this section manually. However, the suggested method is to generate a new
+# project with your newly desired options and replace this Makefile with the new
+# one. Relevant information for each target can be found in armwiz.config.
+
+## STM32CubeX library
+# -------------------
+# This is the option that defines which ST Microsystems library to use for your
+# target device.
+
+# Option        Description
+# ------        -----------
+#             - An empty right-hand side leaves this value undefined
+# STM32CubeF1 - ST Microsystems STM32CubeF1 libraries. Use this if you are going to
+#               use an STM32F1 microcontroller.
+# STM32CubeF2 - ST Microsystems STM32CubeF2 libraries
+# STM32CubeF3 - ST Microsystems STM32CubeF3 libraries
+# STM32CubeF4 - ST Microsystems STM32CubeF4 libraries
 STM32CUBE_VERSION=STM32CubeF1
 
+## ARM Core Endianness
+# --------------------
+# This section defines the projects endianness. In big-endian th emost significant byte
+# is stored at the data's memory address with subsequent bytes is high memory addresses;
+# the least significant byte (LSB) is in the highest memory address. Little-endian uses
+# the revserse order, storing the LSB in the lowest memory address and MSB in the
+# highest memory address. This can be found in the chip's datasheet.
+#
+# option          Description
+# ------          -----------
+#               - An empty right-hand side leaves this value undefined
+# big-endian    - Big endian
+# little-endian - Little endian
+ENDIANNESS=little-endian
+
+## ARM Core
+# ---------
+# This is simply the core used in the target device.
+#
+# option       Description
+# ------       -----------
+#            - An empty right-hand side leaves this value undefined
+# cortex-m3 -
+# cortex-m4
+ARM_CORE=cortex-m3
+
+
+STM32_COMPILER_FLAGS+=-mcpu=${ARM_CORE}
+STM32_COMPILER_FLAGS+=-mthumb
+STM32_COMPILER_FLAGS+=-m${ENDIANNESS}
+STM32_COMPILER_FLAGS+=-Wall
+STM32_COMPILER_FLAGS+=-ffreestanding
+CMSIS_MCU=-DSTM32F103xB
+LINKER_SCRIPT=STM32F103VB_FLASH.ld
+
+
+# Toolchain ================================================================== #
 # GNU ARM Embedded Toolchain
 # Instruction for installing this toolchain can be found at ___________.
-CC=arm-none-eabi-gcc
-CXX=arm-none-eabi-g++
-LD=arm-none-eabi-ld
-AR=arm-none-eabi-ar
-AS=arm-none-eabi-as
-CP=arm-none-eabi-objcopy
-OD=arm-none-eabi-objdump
-NM=arm-none-eabi-nm
-SIZE=arm-none-eabi-size
-A2L=arm-none-eabi-addr2line
+TOOLCHAIN_DIRECTORY=
+CC=${TOOLCHAIN_DIRECTORY}arm-none-eabi-gcc
+CXX=${TOOLCHAIN_DIRECTORY}arm-none-eabi-g++
+LD=${TOOLCHAIN_DIRECTORY}arm-none-eabi-ld
+AR=${TOOLCHAIN_DIRECTORY}arm-none-eabi-ar
+AS=${TOOLCHAIN_DIRECTORY}arm-none-eabi-as
+CP=${TOOLCHAIN_DIRECTORY}arm-none-eabi-objcopy
+OD=${TOOLCHAIN_DIRECTORY}arm-none-eabi-objdump
+NM=${TOOLCHAIN_DIRECTORY}arm-none-eabi-nm
+SIZE=${TOOLCHAIN_DIRECTORY}arm-none-eabi-size
+A2L=${TOOLCHAIN_DIRECTORY}arm-none-eabi-addr2line
 
 ###
 # File names
@@ -43,6 +100,7 @@ CXXSOURCES=$(shell find -L $(SRCDIR) -name '*.cpp')
 # Find project header directories
 INC=$(shell find -L $(INCDIR) -name '*.h' -exec dirname {} \; | uniq)
 # Find library source Files
+ifdef STM32CUBE_VERSION
 CSOURCES+=$(shell find -L libraries/${STM32CUBE_VERSION}/Drivers/STM32F*xx_HAL_Driver -name '*.c' | grep -iv template | grep -iv example)
 # CSOURCES+=$(shell find -L libraries/${STM32CUBE_VERSION}/Drivers/CMSIS/Device/ST/STM32F1xx -name '*.c' | grep -iv template | grep -iv example)
 # CSOURCES+=$(shell find -L libraries/${STM32CUBE_VERSION}/Drivers/BSP/STM32F1xx_Nucleo -name '*.c' | grep -iv template | grep -iv example)
@@ -52,6 +110,7 @@ INC+=$(shell find -L libraries/${STM32CUBE_VERSION}/Drivers/STM32F*xx_HAL_Driver
 # INC+=$(shell find -L libraries/${STM32CUBE_VERSION}/Drivers/CMSIS/Device/ST/STM32F1xx -name '*.h' -exec dirname {} \; | uniq | grep -iv template | grep -iv example)
 # INC+=$(shell find -L libraries/${STM32CUBE_VERSION}/Drivers/BSP/STM32F1xx_Nucleo -name '*.h' -exec dirname {} \; | uniq | grep -iv template | grep -iv example)
 INC+=$(shell find -L libraries/${STM32CUBE_VERSION}/Drivers/CMSIS -name '*.h' -exec dirname {} \; | uniq | grep -iv template | grep -iv example)
+endif
 
 # Include the include directories
 INCLUDES=$(INC:%=-I%)
@@ -69,20 +128,19 @@ BINBIN=$(PROJECT_NAME).bin
 
 ###
 # MCU FLAGS
-MCFLAGS=-mcpu=cortex-m3 -mthumb -mlittle-endian \
--Wall -ffreestanding
+MCFLAGS+=${STM32_COMPILER_FLAGS}
 # -nostdlib
 # COMPILE FLAGS
 #####
 ##### The two DEFS below will cause trouble. Find the new names for these.
 #####
 # DEFS=-DUSE_STDPERIPH_DRIVER
-DEFS+=-DSTM32F103xB
+DEFS+=${CMSIS_MCU}
 # DEFS+=-DARM_MATH_CM3
 CFLAGS=-c $(MCFLAGS) $(DEFS) $(INCLUDES)
 CXXFLAGS=-c $(MCFLAGS) $(DEFS) $(INCLUDES) -std=c++11
 # LINKER FLAGS
-LDSCRIPT=STM32F103VB_FLASH.ld
+LDSCRIPT=${LINKER_SCRIPT}
 LDFLAGS =-T $(LDSCRIPT) $(MCFLAGS) --specs=nosys.specs $(INCLUDES_LIBS) $(LINK_LIBS)
 
 ###
