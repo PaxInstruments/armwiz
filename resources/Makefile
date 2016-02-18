@@ -8,6 +8,7 @@
 
 # Overview =================================================================== #
 # This Makefile...
+# TODO Write a good overview explaining this file to a novice.
 
 # Project Specific Definitions =============================================== #
 # This section should not need to be changed if your initial project generation
@@ -20,7 +21,7 @@
 # -------------------
 # This is the option that defines which ST Microsystems library to use for your
 # target device.
-
+STM32CUBE_VERSION=STM32CubeF1
 # Option        Description
 # ------        -----------
 #             - An empty right-hand side leaves this value undefined
@@ -29,7 +30,6 @@
 # STM32CubeF2 - ST Microsystems STM32CubeF2 libraries
 # STM32CubeF3 - ST Microsystems STM32CubeF3 libraries
 # STM32CubeF4 - ST Microsystems STM32CubeF4 libraries
-STM32CUBE_VERSION=STM32CubeF1
 
 ## ARM Core Endianness
 # --------------------
@@ -38,34 +38,95 @@ STM32CUBE_VERSION=STM32CubeF1
 # the least significant byte (LSB) is in the highest memory address. Little-endian uses
 # the revserse order, storing the LSB in the lowest memory address and MSB in the
 # highest memory address. This can be found in the chip's datasheet.
-#
-# option          Description
+ENDIANNESS=little-endian
+# Option          Description
 # ------          -----------
 #               - An empty right-hand side leaves this value undefined
 # big-endian    - Big endian
 # little-endian - Little endian
-ENDIANNESS=little-endian
 
 ## ARM Core
 # ---------
 # This is simply the core used in the target device.
-#
-# option       Description
-# ------       -----------
-#            - An empty right-hand side leaves this value undefined
-# cortex-m3 -
-# cortex-m4
+# TODO Add option descriptions.
 ARM_CORE=cortex-m3
+# Option       Description
+# ------       -----------
+#               - An empty right-hand side leaves this value undefined
+# cortex-m0     -
+# cortex-m0plus -
+# cortex-m1     -
+# cortex-m3     -
+# cortex-m4     -
 
+## Instructions set?
+# ------------------
+# I think this is the insturction set used.
+# TODO Learn and explain here
+INSTRUCTION_SET=thumb
+# Option   Description
+# ------   -----------
+#        - An empty right-hand side leaves this value undefined
+# arm    -
+# thumb  -
 
-STM32_COMPILER_FLAGS+=-mcpu=${ARM_CORE}
-STM32_COMPILER_FLAGS+=-mthumb
-STM32_COMPILER_FLAGS+=-m${ENDIANNESS}
-STM32_COMPILER_FLAGS+=-Wall
-STM32_COMPILER_FLAGS+=-ffreestanding
-CMSIS_MCU=-DSTM32F103xB
+# CMSIS MCU
+# ---------
+# This is the definition needed by the CMSIS libraries to set several parameters.
+# TODO Add a list of which chips go with which flags.
+# TODO Display path to file in whic this is needed.
+CMSIS_MCU_FAMILY=STM32F103xB
+# Option        Description
+# ------        -----------
+# STM32F100xB - STM32F100C4, STM32F100R4, STM32F100C6, STM32F100R6, STM32F100C8,
+#               STM32F100R8, STM32F100V8, STM32F100CB, STM32F100RB, STM32F100VB
+# STM32F100xE - STM32F100RC, STM32F100VC, STM32F100ZC, STM32F100RD, STM32F100VD,
+#               STM32F100ZD, STM32F100RE, STM32F100VE, STM32F100ZE
+# STM32F101x6 - STM32F101C4, STM32F101R4, STM32F101T4, STM32F101C6, STM32F101R6,
+#               STM32F101T6
+# STM32F101xB - STM32F101C8, STM32F101R8, STM32F101T8, STM32F101V8, STM32F101CB,
+#               STM32F101RB, STM32F101TB, STM32F101VB
+# STM32F101xE - STM32F101RC, STM32F101VC, STM32F101ZC, STM32F101RD, STM32F101VD,
+#               STM32F101ZD, STM32F101RE, STM32F101VE, STM32F101ZE
+# STM32F101xG - STM32F101RF, STM32F101VF, STM32F101ZF, STM32F101RG, STM32F101VG,
+#               STM32F101ZG
+# STM32F102x6 - STM32F102C4, STM32F102R4, STM32F102C6, STM32F102R6
+# STM32F102xB - STM32F102C8, STM32F102R8, STM32F102CB, STM32F102RB
+# STM32F103x6 - STM32F103C4, STM32F103R4, STM32F103T4, STM32F103C6, STM32F103R6,
+#               STM32F103T6
+# STM32F103xB - STM32F103C8, STM32F103R8, STM32F103T8, STM32F103V8, STM32F103CB,
+#               STM32F103RB, STM32F103TB, STM32F103VB
+# STM32F103xE - STM32F103RC, STM32F103VC, STM32F103ZC, STM32F103RD, STM32F103VD,
+#               STM32F103ZD, STM32F103RE, STM32F103VE, STM32F103ZE
+# STM32F103xG - STM32F103RF, STM32F103VF, STM32F103ZF, STM32F103RG, STM32F103VG,
+#               STM32F103ZG
+# STM32F105xC - STM32F105R8, STM32F105V8, STM32F105RB, STM32F105VB, STM32F105RC,
+#               STM32F105VC
+# STM32F107xC - STM32F107RB, STM32F107VB, STM32F107RC, STM32F107VC
+
+## Warning Flags
+# --------------
+# These are the flags for compiler warnings.
+CC_WARNINGS=-Wall
+
+## Other Compiler Flags
+# ---------------------
+# These are other compiler flags.
+CC_OTHER_FLAGS+=-ffreestanding
+
+# Linker Script
+# -------------
+# This is the script that tells the linker where all the bits go.
+# TODO Make an armwiz linker script. Use ifdef statements to select the flash
+# and RAM parameters.
 LINKER_SCRIPT=STM32F103VB_FLASH.ld
 
+STM32_COMPILER_FLAGS+=-mcpu=${ARM_CORE}
+STM32_COMPILER_FLAGS+=-m${INSTRUCTION_SET}
+STM32_COMPILER_FLAGS+=-m${ENDIANNESS}
+STM32_COMPILER_FLAGS+=${CC_WARNINGS}
+STM32_COMPILER_FLAGS+=${CC_OTHER_FLAGS}
+CMSIS_MCU+=-D${CMSIS_MCU_FAMILY}
 
 # Toolchain ================================================================== #
 # GNU ARM Embedded Toolchain

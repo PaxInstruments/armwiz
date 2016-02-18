@@ -505,9 +505,9 @@ def main():
         # - Copy this file and comment out unused libraries. There is a lot of target specific information in here.
     linkerFile = 'libraries/STM32CubeF1/Projects/STM32F103RB-Nucleo/Templates/TrueSTUDIO/STM32F103RB_Nucleo/STM32F103VB_FLASH.ld'
         # - We need the per-target RAM and FLASH information. We can easily generate this file.
-    makefile = 'resources/stm32/Makefile'
+    makefile = 'resources/Makefile'
         # - Needs the location of several target-specific folders
-    readme = 'resources/stm32/readme.txt'
+    readme = 'resources/readme.txt'
 
     # # This copy of the blinky paths works
     # exampleName = 'blinky'
@@ -519,8 +519,8 @@ def main():
     # systemFile = 'resources/stm32/source/system_stm32f1xx.c'
     # halConf = 'resources/stm32/include/stm32f1xx_hal_conf.h'
     # linkerFile = 'resources/stm32/STM32F103VB_FLASH.ld'
-    # makefile = 'resources/stm32/Makefile'
-    # readme = 'resources/stm32/readme.txt'
+    # makefile = 'resources/Makefile'
+    # readme = 'resources/readme.txt'
 
     # Deploy blinky example
     exampleSubfolders = ['binary','include','source']
