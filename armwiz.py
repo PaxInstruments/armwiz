@@ -393,14 +393,26 @@ def printConfigList(entryType,configurationFilePath):
         return True
 
 def writeOption(inputFile,variable,option):
+    """Assign a value to a variable.
+
+    Usage:
+    writeOption(<input file>,<variable name>,<new value>)
+
+    Example:
+    writeOption('Makefile','STM32CUBE_VERSION','STM32CubeF1')
+    """
+    lines = []
     with open(inputFile) as workingFile:
         for line in workingFile:
             index=line.find(variable)
-            print(index)
-    # Find a line beginnig with <variable>, not just containing <variable>
-    # replace the entire line with <variable>=<option>
-    # Write to file
+            if index == 0:
+                line = line.replace(line, "{}={}\n".format(variable,option))
+            lines.append(line)
     workingFile.close()
+    with open(inputFile,'w') as outputFile:
+            for line in lines:
+                outputFile.write(line)
+    outputFile.close()
 
 def deployMakefile():
     pass
