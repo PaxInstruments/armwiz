@@ -395,7 +395,8 @@ def printConfigList(entryType,configurationFilePath):
 def writeOption(inputFile,variable,option):
     with open(inputFile) as workingFile:
         for line in workingFile:
-            print(line)
+            index=line.find(variable)
+            print(index)
     # Find a line beginnig with <variable>, not just containing <variable>
     # replace the entire line with <variable>=<option>
     # Write to file
