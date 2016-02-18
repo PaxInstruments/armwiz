@@ -392,6 +392,18 @@ def printConfigList(entryType,configurationFilePath):
                 raise
         return True
 
+def writeOption(inputFile,variable,option):
+    with open(inputFile) as workingFile:
+        for line in workingFile:
+            print(line)
+    # Find a line beginnig with <variable>, not just containing <variable>
+    # replace the entire line with <variable>=<option>
+    # Write to file
+    workingFile.close()
+
+def deployMakefile():
+    pass
+
 def main():
     """
     armwiz project template generator for ARM processors and development
