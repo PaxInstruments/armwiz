@@ -562,6 +562,14 @@ def main():
     call('cp {} {}/examples/{}/'.format(readme,projectTempDir,exampleName),shell=True)
     call('cp {} {}/examples/{}/'.format(linkerFile,projectTempDir,exampleName),shell=True)
 
+    # Update Makefile values
+    writeOption("{}/examples/{}/Makefile".format(projectTempDir,exampleName),'STM32CUBE_VERSION','STM32CubeF1')
+    writeOption("{}/examples/{}/Makefile".format(projectTempDir,exampleName),'ENDIANNESS','little-endian')
+    writeOption("{}/examples/{}/Makefile".format(projectTempDir,exampleName),'ARM_CORE','cortex-m3')
+    writeOption("{}/examples/{}/Makefile".format(projectTempDir,exampleName),'INSTRUCTION_SET','thumb')
+    writeOption("{}/examples/{}/Makefile".format(projectTempDir,exampleName),'CMSIS_MCU_FAMILY','STM32F103xB')
+    writeOption("{}/examples/{}/Makefile".format(projectTempDir,exampleName),'LINKER_SCRIPT','STM32F103VB_FLASH.ld')
+
     # Move temporary project directory to the final location
     call('mv {} {}'.format(projectTempDir,arguments.output),shell=True)
 

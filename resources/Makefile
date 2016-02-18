@@ -21,7 +21,7 @@
 # -------------------
 # This is the option that defines which ST Microsystems library to use for your
 # target device.
-STM32CUBE_VERSION=STM32CubeF1
+STM32CUBE_VERSION=REPLACE_THIS_VALUE
 # Option        Description
 # ------        -----------
 #             - An empty right-hand side leaves this value undefined
@@ -38,7 +38,7 @@ STM32CUBE_VERSION=STM32CubeF1
 # the least significant byte (LSB) is in the highest memory address. Little-endian uses
 # the revserse order, storing the LSB in the lowest memory address and MSB in the
 # highest memory address. This can be found in the chip's datasheet.
-ENDIANNESS=little-endian
+ENDIANNESS=REPLACE_THIS_VALUE
 # Option          Description
 # ------          -----------
 #               - An empty right-hand side leaves this value undefined
@@ -49,7 +49,7 @@ ENDIANNESS=little-endian
 # ---------
 # This is simply the core used in the target device.
 # TODO Add option descriptions.
-ARM_CORE=cortex-m3
+ARM_CORE=REPLACE_THIS_VALUE
 # Option       Description
 # ------       -----------
 #               - An empty right-hand side leaves this value undefined
@@ -63,7 +63,7 @@ ARM_CORE=cortex-m3
 # ------------------
 # I think this is the insturction set used.
 # TODO Learn and explain here
-INSTRUCTION_SET=thumb
+INSTRUCTION_SET=REPLACE_THIS_VALUE
 # Option   Description
 # ------   -----------
 #        - An empty right-hand side leaves this value undefined
@@ -75,7 +75,7 @@ INSTRUCTION_SET=thumb
 # This is the definition needed by the CMSIS libraries to set several parameters.
 # TODO Add a list of which chips go with which flags.
 # TODO Display path to file in whic this is needed.
-CMSIS_MCU_FAMILY=STM32F103xB
+CMSIS_MCU_FAMILY=REPLACE_THIS_VALUE
 # Option        Description
 # ------        -----------
 # STM32F100xB - STM32F100C4, STM32F100R4, STM32F100C6, STM32F100R6, STM32F100C8,
@@ -119,7 +119,7 @@ CC_OTHER_FLAGS+=-ffreestanding
 # This is the script that tells the linker where all the bits go.
 # TODO Make an armwiz linker script. Use ifdef statements to select the flash
 # and RAM parameters.
-LINKER_SCRIPT=STM32F103VB_FLASH.ld
+LINKER_SCRIPT=REPLACE_THIS_VALUE
 
 STM32_COMPILER_FLAGS+=-mcpu=${ARM_CORE}
 STM32_COMPILER_FLAGS+=-m${INSTRUCTION_SET}
