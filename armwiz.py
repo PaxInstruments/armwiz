@@ -28,6 +28,8 @@
 # TODO Issue: Ensure git knows about empty directories in the project tree by putting
 #      readmefiles in there or .git files if that makes sense.
 # TODO Function: Generate README based on libraries copied.
+# TODO Ignore duplicated library options while parsing arguments. This could happen
+#      for free if armwiz first checks if a target library already exists.
 
 # Icebox
 # ======
@@ -68,6 +70,7 @@ import errno
 import argparse
 import configparser
 import fileinput
+import ntpath
 
 ## Standard Python header information
 __author__ = "Charles Edward Pax"
@@ -528,7 +531,8 @@ def main():
     systemFile = 'libraries/STM32CubeF1/Drivers/CMSIS/Device/ST/STM32F1xx/Source/Templates/system_stm32f1xx.c'
     halConf = 'libraries/mbed/libraries/mbed/targets/cmsis/TARGET_STM/TARGET_STM32F1/stm32f1xx_hal_conf.h'
         # - Copy this file and comment out unused libraries. There is a lot of target specific information in here.
-    linkerFile = 'libraries/STM32CubeF1/Projects/STM32F103RB-Nucleo/Templates/TrueSTUDIO/STM32F103RB_Nucleo/STM32F103VB_FLASH.ld'
+    # linkerFile = 'libraries/STM32CubeF1/Projects/STM32F103RB-Nucleo/Templates/TrueSTUDIO/STM32F103RB_Nucleo/STM32F103VB_FLASH.ld'
+    linkerFile = 'resources/stm32xxx.ld'
         # - We need the per-target RAM and FLASH information. We can easily generate this file.
     makefile = 'resources/Makefile'
         # - Needs the location of several target-specific folders
@@ -563,12 +567,13 @@ def main():
     call('cp {} {}/examples/{}/'.format(linkerFile,projectTempDir,exampleName),shell=True)
 
     # Update Makefile values
+    writeOption("{}/examples/{}/Makefile".format(projectTempDir,exampleName),'PROJECT_NAME','myProject')
     writeOption("{}/examples/{}/Makefile".format(projectTempDir,exampleName),'STM32CUBE_VERSION','STM32CubeF1')
     writeOption("{}/examples/{}/Makefile".format(projectTempDir,exampleName),'ENDIANNESS','little-endian')
     writeOption("{}/examples/{}/Makefile".format(projectTempDir,exampleName),'ARM_CORE','cortex-m3')
     writeOption("{}/examples/{}/Makefile".format(projectTempDir,exampleName),'INSTRUCTION_SET','thumb')
     writeOption("{}/examples/{}/Makefile".format(projectTempDir,exampleName),'CMSIS_MCU_FAMILY','STM32F103xB')
-    writeOption("{}/examples/{}/Makefile".format(projectTempDir,exampleName),'LINKER_SCRIPT','STM32F103VB_FLASH.ld')
+    writeOption("{}/examples/{}/Makefile".format(projectTempDir,exampleName),'LINKER_SCRIPT',ntpath.basename(linkerFile))
 
     # Move temporary project directory to the final location
     call('mv {} {}'.format(projectTempDir,arguments.output),shell=True)
