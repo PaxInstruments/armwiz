@@ -404,6 +404,8 @@ def writeOption(inputFile,variable,option):
     Example:
     writeOption('Makefile','STM32CUBE_VERSION','STM32CubeF1')
     """
+    # TODO Make this function accept a dictionary and input file. Recursive use
+    #      of self similar to makeProjectTree()
     lines = []
     with open(inputFile) as workingFile:
         for line in workingFile:
@@ -567,13 +569,17 @@ def main():
     call('cp {} {}/examples/{}/'.format(linkerFile,projectTempDir,exampleName),shell=True)
 
     # Update Makefile values
-    writeOption("{}/examples/{}/Makefile".format(projectTempDir,exampleName),'PROJECT_NAME','myProject')
-    writeOption("{}/examples/{}/Makefile".format(projectTempDir,exampleName),'STM32CUBE_VERSION','STM32CubeF1')
-    writeOption("{}/examples/{}/Makefile".format(projectTempDir,exampleName),'ENDIANNESS','little-endian')
-    writeOption("{}/examples/{}/Makefile".format(projectTempDir,exampleName),'ARM_CORE','cortex-m3')
-    writeOption("{}/examples/{}/Makefile".format(projectTempDir,exampleName),'INSTRUCTION_SET','thumb')
-    writeOption("{}/examples/{}/Makefile".format(projectTempDir,exampleName),'CMSIS_MCU_FAMILY','STM32F103xB')
-    writeOption("{}/examples/{}/Makefile".format(projectTempDir,exampleName),'LINKER_SCRIPT',ntpath.basename(linkerFile))
+    optionsList = {
+        'PROJECT_NAME': 'myProject',
+        'STM32CUBE_VERSION': 'STM32CubeF1',
+        'ENDIANNESS': 'little-endian',
+        'ARM_CORE': 'cortex-m3',
+        'INSTRUCTION_SET': 'thumb',
+        'CMSIS_MCU_FAMILY': 'STM32F103xB',
+        'LINKER_SCRIPT': ntpath.basename(linkerFile)
+    }
+    for option in optionsList:
+        writeOption("{}/examples/{}/Makefile".format(projectTempDir,exampleName),option,optionsList[option])
 
     # Move temporary project directory to the final location
     call('mv {} {}'.format(projectTempDir,arguments.output),shell=True)
