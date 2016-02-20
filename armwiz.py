@@ -425,6 +425,15 @@ def writeOption(inputFile,variable,option):
                 outputFile.write(line)
     outputFile.close()
 
+def createTarget():
+    """
+    Needs
+    - ConfigParser
+    - targetName
+    return
+    """
+    pass
+
 def main():
     """
     armwiz project template generator for ARM processors and development
