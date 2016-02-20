@@ -120,6 +120,11 @@ class Target(object):
         self.short_description = ''
         self.long_description = ''
         self.website_url = ''
+        self.stm32cube_version = ''
+        self.endianness = ''
+        self.arm_core = ''
+        self.instruction_set = ''
+        self.cmsis_mcu_family = ''
 
 class Library(object):
     """Libraries in git."""
@@ -188,6 +193,7 @@ def parseArguments():
     parser.add_argument('-t','--targetname',
         help='Specify target microcontroller or processor via -t <targetname>',
         metavar="<targetname>",
+        action="append",
         required=False)
     parser.add_argument('-l','--libraryname',
         help='Specify a library to include via -l <libraryname>',
@@ -419,9 +425,6 @@ def writeOption(inputFile,variable,option):
                 outputFile.write(line)
     outputFile.close()
 
-def deployMakefile():
-    pass
-
 def main():
     """
     armwiz project template generator for ARM processors and development
@@ -462,7 +465,13 @@ def main():
     projectTempDir = '{}/{}'.format(emptyTempDir,arguments.projectname)
     print('Project temporary location: {}'.format(projectTempDir))
     sys.stdout.flush()
-    projectSubdirectories = ['source','libraries','binary','examples','.git/modules/libraries']
+    projectSubdirectories = [
+        'source',
+        'libraries',
+        'binary',
+        'examples',
+        '.git/modules/libraries'
+    ]
     makeProjectTree(projectTempDir,projectSubdirectories)
 
     # Deploy libraries to temporary project directory
@@ -498,21 +507,37 @@ def main():
                     pass
                 except:
                     raise
-
-    # # Copy GPIO example
-    # call('rsync -ac resources/gpio_example/ {}/examples/gpio_example'.format(projectTempDir),shell=True)
-    # call('cd {}/examples/gpio_example; ln -s ../../libraries libraries'.format(projectTempDir),shell=True)
-    # linkerScript = 'libraries/mbed/libraries/mbed/targets/cmsis/TARGET_STM/TARGET_STM32F1/TARGET_NUCLEO_F103RB/TOOLCHAIN_GCC_ARM/STM32F103XB.ld'
-    # call('cp {} {}/examples/gpio_example/myLinkerScript.ld'.format(linkerScript,projectTempDir),shell=True)
-    # # Copy stm32 example
-    # call('rsync -ac resources/stm32/ {}/examples/stm32'.format(projectTempDir),shell=True)
-    # call('cd {}/examples/stm32; ln -s ../../libraries libraries'.format(projectTempDir),shell=True)
-    # linkerScript = 'libraries/mbed/libraries/mbed/targets/cmsis/TARGET_STM/TARGET_STM32F1/TARGET_NUCLEO_F103RB/TOOLCHAIN_GCC_ARM/STM32F103XB.ld'
-    # call('cp {} {}/examples/stm32/myLinkerScript.ld'.format(linkerScript,projectTempDir),shell=True)
-    # # Other crap
-    # # call('rsync -ac libraries/STM32CubeF1/Projects/STM32F103RB-Nucleo/Examples/GPIO/GPIO_IOToggle/ {}/examples/GPIO_IOToggle/'.format(projectTempDir),shell=True)
-    # #call('rsync -ac resources/gpio_template/ {}'.format(projectTempDir),shell=True)
-
+    if len(configurationInformation.read(arguments.configfile)) == 0:
+        raise Exception("File '{}' is empty or missing.".format(arguments.configfile))
+    else:
+        targetList = []
+        thisTarget = Target()
+        for targetName in arguments.targetname:
+            for section in configurationInformation:
+                try:
+                    if configurationInformation.get('{}'.format(section),'cli_argument') == targetName:
+                        sys.stdout.flush()
+                        thisTarget.proper_name = configurationInformation.get('{}'.format(section),'proper_name')
+                        thisTarget.mcu = configurationInformation.get('{}'.format(section),'mcu')
+                        thisTarget.cli_argument = configurationInformation.get('{}'.format(section),'cli_argument')
+                        thisTarget.manufacturer = configurationInformation.get('{}'.format(section),'manufacturer')
+                        thisTarget.short_description = configurationInformation.get('{}'.format(section),'short_description')
+                        thisTarget.long_description = configurationInformation.get('{}'.format(section),'long_description')
+                        thisTarget.website_url = configurationInformation.get('{}'.format(section),'website_url')
+                        thisTarget.stm32cube_version = configurationInformation.get('{}'.format(section),'stm32cube_version')
+                        thisTarget.endianness = configurationInformation.get('{}'.format(section),'endianness')
+                        thisTarget.arm_core = configurationInformation.get('{}'.format(section),'arm_core')
+                        thisTarget.instruction_set = configurationInformation.get('{}'.format(section),'instruction_set')
+                        thisTarget.cmsis_mcu_family = configurationInformation.get('{}'.format(section),'cmsis_mcu_family')
+                        try:
+                            print('Deploying {}/examples/{}... '.format(projectTempDir,thisTarget.mcu),end="")
+                            sys.stdout.flush()
+                        except:
+                            raise
+                except configparser.NoOptionError:
+                    pass
+                except:
+                    raise
 
     # This is the blinky test copy
     exampleName = 'blinky'
@@ -540,19 +565,6 @@ def main():
         # - Needs the location of several target-specific folders
     readme = 'resources/readme.txt'
 
-    # # This copy of the blinky paths works
-    # exampleName = 'blinky'
-    # mainDotC = 'resources/stm32/source/main.c'
-    # mainDotH = 'resources/stm32/include/main.h'
-    # startupFile = 'resources/stm32/source/startup_stm32f103xb.s'
-    # itDotC = 'resources/stm32/source/stm32f1xx_it.c'
-    # itDotH = 'resources/stm32/include/stm32f1xx_it.h'
-    # systemFile = 'resources/stm32/source/system_stm32f1xx.c'
-    # halConf = 'resources/stm32/include/stm32f1xx_hal_conf.h'
-    # linkerFile = 'resources/stm32/STM32F103VB_FLASH.ld'
-    # makefile = 'resources/Makefile'
-    # readme = 'resources/readme.txt'
-
     # Deploy blinky example
     exampleSubfolders = ['binary','include','source']
     makeProjectTree("{}/examples/{}".format(projectTempDir,exampleName),exampleSubfolders)
@@ -570,15 +582,16 @@ def main():
 
     # Update Makefile values
     optionsList = {
-        'PROJECT_NAME': 'myProject',
-        'STM32CUBE_VERSION': 'STM32CubeF1',
-        'ENDIANNESS': 'little-endian',
-        'ARM_CORE': 'cortex-m3',
-        'INSTRUCTION_SET': 'thumb',
-        'CMSIS_MCU_FAMILY': 'STM32F103xB',
+        'PROJECT_NAME': arguments.projectname,
+        'STM32CUBE_VERSION': thisTarget.stm32cube_version,
+        'ENDIANNESS': thisTarget.endianness,
+        'ARM_CORE': thisTarget.arm_core,
+        'INSTRUCTION_SET': thisTarget.instruction_set,
+        'CMSIS_MCU_FAMILY': thisTarget.cmsis_mcu_family,
         'LINKER_SCRIPT': ntpath.basename(linkerFile)
     }
     for option in optionsList:
+        # print('{}: {}'.format(option,optionsList[option]))
         writeOption("{}/examples/{}/Makefile".format(projectTempDir,exampleName),option,optionsList[option])
 
     # Move temporary project directory to the final location
@@ -592,7 +605,6 @@ def main():
     # TODO Generate hello world code
     # TODO Copy hello worl code to temp project directory
     # TODO mv temporary froject directory to destination
-
 
 if __name__ == "__main__":
     # TODO Read about python file structure
