@@ -487,67 +487,26 @@ def main():
         '.git/modules/libraries']
     makeProjectTree(projectTempDir,projectSubdirectories)
 
-    # Create optioined library List
+    # Create library List
     libraryList = []
     for section in arguments.libraryname:
         libraryList.append(makeObjectFromConfigInfo(configurationInformation,section))
-    for thing in libraryList:
-        try:
-            print('Library:', thing.cli_argument)
-            myList = vars(thing)
-            print('    item_type:', thing.item_type)
-            print('    cli_argument:', thing.cli_argument)
-            for item in myList:
-                pass
-                # print('  ',item + ':',myList[item])
-        except AttributeError:
-            pass
-        except:
-            raise
 
-    # Create optioined target List
+    # Create target List
     targetList = []
     for section in arguments.targetname:
         targetList.append(makeObjectFromConfigInfo(configurationInformation,section))
-    for thing in targetList:
-        try:
-            print('Target:', thing.cli_argument)
-            myList = vars(thing)
-            print('    item_type:', thing.item_type)
-            print('    cli_argument:', thing.cli_argument)
-            for item in myList:
-                pass
-                # print('  ',item + ':',myList[item])
-        except AttributeError:
-            pass
-        except:
-            raise
 
-    # Deploy libraries to temporary project directory
-    for libraryName in arguments.libraryname:
-        for section in configurationInformation:
-            thisLibrary = Library()
-            try:
-                if configurationInformation.get('{}'.format(section),'cli_argument') == libraryName:
-                    sys.stdout.flush()
-                    thisLibrary.proper_name = configurationInformation.get('{}'.format(section),'proper_name')
-                    thisLibrary.git_name = configurationInformation.get('{}'.format(section),'git_name')
-                    thisLibrary.git_url = configurationInformation.get('{}'.format(section),'git_url')
-                    thisLibrary.website_url = configurationInformation.get('{}'.format(section),'website_url')
-                    try:
-                        print('Deploying {}/libraries/{}... '.format(projectTempDir,thisLibrary.git_name),end="")
-                        sys.stdout.flush()
-                        deployLibrary(projectTempDir,thisLibrary)
-                        if os.path.exists("{}/libraries/{}/".format(projectTempDir,thisLibrary.git_name)):
-                            print('Okay')
-                        else:
-                            raise Exception('    - FAIL: Directory {} does not exist.')
-                    except:
-                        raise
-            except configparser.NoOptionError:
-                pass
-            except:
-                raise
+    # Deploy libraries
+    for library in libraryList:
+        print('Deploying {}/libraries/{}... '.format(projectTempDir,library.git_name),end="")
+        sys.stdout.flush()
+        deployLibrary(projectTempDir,library)
+        if os.path.exists("{}/libraries/{}/".format(projectTempDir,library.git_name)):
+            print('Okay')
+        else:
+            raise Exception('    - FAIL: Directory {} does not exist.')
+
     targetList = []
     thisTarget = Target()
     for targetName in arguments.targetname:
