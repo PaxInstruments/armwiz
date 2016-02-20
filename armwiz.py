@@ -87,6 +87,9 @@ __status__ = "Development"
 ## Class definitions ##
 #######################
 
+class ConfigObject:
+    """A config object."""
+
 class Manufacturer(object):
     """The manufacturer of an object"""
     # TODO Add appropriate docstring
@@ -378,28 +381,19 @@ def deployLibrary(targetProjectRootPath,library):
 #     else:
 #         return open(arg, 'r')  # return an open file handle
 
-def printConfigList(entryType,configurationFilePath):
+def printConfigList(entryType,configInfo):
     """Print a list of configuration entries and descriptions and return True."""
-    configurationInformation = configparser.ConfigParser()
-    try:
-        configurationInformation.read(configurationFilePath)
-    except:
-        raise
-    if len(configurationInformation.read(configurationFilePath)) == 0:
-        raise Exception("File '{}'' is empty or missing.".format(configurationFilePath))
-        return False
-    else:
-        print('Argument Name  Argument Description')
-        print('-------------  --------------------------------')
-        for entry in configurationInformation:
-            try:
-                if configurationInformation.get('{}'.format(entry),'item_type') == entryType:
-                    print('{:<12}   {}'.format(configurationInformation.get(entry,'cli_argument'),configurationInformation.get(entry,'short_description')))
-            except configparser.NoOptionError:
-                pass
-            except:
-                raise
-        return True
+    print('Argument Name  Argument Description')
+    print('-------------  --------------------------------')
+    for entry in configInfo:
+        try:
+            if configurationInformation.get('{}'.format(entry),'item_type') == entryType:
+                print('{:<12}   {}'.format(configurationInformation.get(entry,'cli_argument'),configurationInformation.get(entry,'short_description')))
+        except configparser.NoOptionError:
+            pass
+        except:
+            raise
+    return True
 
 def writeOption(inputFile,variable,option):
     """Assign a value to a variable.
@@ -425,14 +419,13 @@ def writeOption(inputFile,variable,option):
                 outputFile.write(line)
     outputFile.close()
 
-def createTarget():
-    """
-    Needs
-    - ConfigParser
-    - targetName
-    return
-    """
-    pass
+def makeObjectFromConfigInfo(configInfo,section):
+    """Return an object"""
+    thisObject=ConfigObject()
+    sectionDict = dict(configInfo.items(section))
+    for item in sectionDict:
+        setattr(thisObject,item,configInfo.get(section,item))
+    return thisObject
 
 def main():
     """
@@ -458,14 +451,26 @@ def main():
     if arguments.no_header == False:
         printHeader()
 
+    # Read configuration information
+    configurationInformation = configparser.ConfigParser()
+    try:
+        configurationInformation.read(arguments.configfile)
+        if len(configurationInformation.read(arguments.configfile)) == 0:
+            raise Exception("File '{}' is empty or missing.".format(arguments.configfile))
+    except:
+        raise
+
     # Hangle all do-one-thing-and-exit arguments
     if arguments.L == True:
-        printConfigList('library',arguments.configfile)
+        # Print a list of all supported libraries
+        printConfigList('library',configurationInformation)
         exit()
     elif arguments.T == True:
-        printConfigList('target',arguments.configfile)
+        # Print a list of all supported targets
+        printConfigList('target',configurationInformation)
         exit()
     elif arguments.projectname == None:
+        # If no project name is give, exit
         parser.print_help()
         exit()
 
@@ -479,74 +484,98 @@ def main():
         'libraries',
         'binary',
         'examples',
-        '.git/modules/libraries'
-    ]
+        '.git/modules/libraries']
     makeProjectTree(projectTempDir,projectSubdirectories)
 
+    # Create optioined library List
+    libraryList = []
+    for section in arguments.libraryname:
+        libraryList.append(makeObjectFromConfigInfo(configurationInformation,section))
+    for thing in libraryList:
+        try:
+            print('Library:', thing.cli_argument)
+            myList = vars(thing)
+            print('    item_type:', thing.item_type)
+            print('    cli_argument:', thing.cli_argument)
+            for item in myList:
+                pass
+                # print('  ',item + ':',myList[item])
+        except AttributeError:
+            pass
+        except:
+            raise
+
+    # Create optioined target List
+    targetList = []
+    for section in arguments.targetname:
+        targetList.append(makeObjectFromConfigInfo(configurationInformation,section))
+    for thing in targetList:
+        try:
+            print('Target:', thing.cli_argument)
+            myList = vars(thing)
+            print('    item_type:', thing.item_type)
+            print('    cli_argument:', thing.cli_argument)
+            for item in myList:
+                pass
+                # print('  ',item + ':',myList[item])
+        except AttributeError:
+            pass
+        except:
+            raise
+
     # Deploy libraries to temporary project directory
-    configurationInformation = configparser.ConfigParser()
-    try:
-        configurationInformation.read(arguments.configfile)
-    except:
-        raise
-    if len(configurationInformation.read(arguments.configfile)) == 0:
-        raise Exception("File '{}' is empty or missing.".format(arguments.configfile))
-    else:
-        for libraryName in arguments.libraryname:
-            for section in configurationInformation:
-                thisLibrary = Library()
-                try:
-                    if configurationInformation.get('{}'.format(section),'cli_argument') == libraryName:
+    for libraryName in arguments.libraryname:
+        for section in configurationInformation:
+            thisLibrary = Library()
+            try:
+                if configurationInformation.get('{}'.format(section),'cli_argument') == libraryName:
+                    sys.stdout.flush()
+                    thisLibrary.proper_name = configurationInformation.get('{}'.format(section),'proper_name')
+                    thisLibrary.git_name = configurationInformation.get('{}'.format(section),'git_name')
+                    thisLibrary.git_url = configurationInformation.get('{}'.format(section),'git_url')
+                    thisLibrary.website_url = configurationInformation.get('{}'.format(section),'website_url')
+                    try:
+                        print('Deploying {}/libraries/{}... '.format(projectTempDir,thisLibrary.git_name),end="")
                         sys.stdout.flush()
-                        thisLibrary.proper_name = configurationInformation.get('{}'.format(section),'proper_name')
-                        thisLibrary.git_name = configurationInformation.get('{}'.format(section),'git_name')
-                        thisLibrary.git_url = configurationInformation.get('{}'.format(section),'git_url')
-                        thisLibrary.website_url = configurationInformation.get('{}'.format(section),'website_url')
-                        try:
-                            print('Deploying {}/libraries/{}... '.format(projectTempDir,thisLibrary.git_name),end="")
-                            sys.stdout.flush()
-                            deployLibrary(projectTempDir,thisLibrary)
-                            if os.path.exists("{}/libraries/{}/".format(projectTempDir,thisLibrary.git_name)):
-                                print('Okay')
-                            else:
-                                raise Exception('    - FAIL: Directory {} does not exist.')
-                        except:
-                            raise
-                except configparser.NoOptionError:
-                    pass
-                except:
-                    raise
-    if len(configurationInformation.read(arguments.configfile)) == 0:
-        raise Exception("File '{}' is empty or missing.".format(arguments.configfile))
-    else:
-        targetList = []
-        thisTarget = Target()
-        for targetName in arguments.targetname:
-            for section in configurationInformation:
-                try:
-                    if configurationInformation.get('{}'.format(section),'cli_argument') == targetName:
+                        deployLibrary(projectTempDir,thisLibrary)
+                        if os.path.exists("{}/libraries/{}/".format(projectTempDir,thisLibrary.git_name)):
+                            print('Okay')
+                        else:
+                            raise Exception('    - FAIL: Directory {} does not exist.')
+                    except:
+                        raise
+            except configparser.NoOptionError:
+                pass
+            except:
+                raise
+    targetList = []
+    thisTarget = Target()
+    for targetName in arguments.targetname:
+        for section in configurationInformation:
+            try:
+                if configurationInformation.get('{}'.format(section),'cli_argument') == targetName:
+                    sys.stdout.flush()
+                    thisTarget.proper_name = configurationInformation.get('{}'.format(section),'proper_name')
+                    thisTarget.mcu = configurationInformation.get('{}'.format(section),'mcu')
+                    thisTarget.cli_argument = configurationInformation.get('{}'.format(section),'cli_argument')
+                    thisTarget.manufacturer = configurationInformation.get('{}'.format(section),'manufacturer')
+                    thisTarget.short_description = configurationInformation.get('{}'.format(section),'short_description')
+                    thisTarget.long_description = configurationInformation.get('{}'.format(section),'long_description')
+                    thisTarget.website_url = configurationInformation.get('{}'.format(section),'website_url')
+                    thisTarget.stm32cube_version = configurationInformation.get('{}'.format(section),'stm32cube_version')
+                    thisTarget.endianness = configurationInformation.get('{}'.format(section),'endianness')
+                    thisTarget.arm_core = configurationInformation.get('{}'.format(section),'arm_core')
+                    thisTarget.instruction_set = configurationInformation.get('{}'.format(section),'instruction_set')
+                    thisTarget.cmsis_mcu_family = configurationInformation.get('{}'.format(section),'cmsis_mcu_family')
+                    try:
+                        print('Deploying {}/examples/{}... '.format(projectTempDir,thisTarget.mcu),end="")
                         sys.stdout.flush()
-                        thisTarget.proper_name = configurationInformation.get('{}'.format(section),'proper_name')
-                        thisTarget.mcu = configurationInformation.get('{}'.format(section),'mcu')
-                        thisTarget.cli_argument = configurationInformation.get('{}'.format(section),'cli_argument')
-                        thisTarget.manufacturer = configurationInformation.get('{}'.format(section),'manufacturer')
-                        thisTarget.short_description = configurationInformation.get('{}'.format(section),'short_description')
-                        thisTarget.long_description = configurationInformation.get('{}'.format(section),'long_description')
-                        thisTarget.website_url = configurationInformation.get('{}'.format(section),'website_url')
-                        thisTarget.stm32cube_version = configurationInformation.get('{}'.format(section),'stm32cube_version')
-                        thisTarget.endianness = configurationInformation.get('{}'.format(section),'endianness')
-                        thisTarget.arm_core = configurationInformation.get('{}'.format(section),'arm_core')
-                        thisTarget.instruction_set = configurationInformation.get('{}'.format(section),'instruction_set')
-                        thisTarget.cmsis_mcu_family = configurationInformation.get('{}'.format(section),'cmsis_mcu_family')
-                        try:
-                            print('Deploying {}/examples/{}... '.format(projectTempDir,thisTarget.mcu),end="")
-                            sys.stdout.flush()
-                        except:
-                            raise
-                except configparser.NoOptionError:
-                    pass
-                except:
-                    raise
+                    except:
+                        raise
+            except configparser.NoOptionError:
+                pass
+            except:
+                raise
 
     # This is the blinky test copy
     exampleName = 'blinky'
