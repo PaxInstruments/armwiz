@@ -90,25 +90,6 @@ __status__ = "Development"
 class ConfigObject:
     """A config object."""
 
-class Manufacturer(object):
-    """The manufacturer of an object"""
-    # TODO Add appropriate docstring
-    def __init__(self):
-        self.item_type = 'manufacturer'
-        self.proper_name = ''
-        self.website_url = ''
-
-class Core(object):
-    """The MCU core designed by ARM."""
-    # TODO Add appropriate docstring
-    def __init__(self):
-        self.item_type = 'core'
-        self.proper_name = ''
-        self.chip_family = ''
-        self.architecture = ''
-        self.manufacturer = ''
-        self.gcc_flag_mcpu = ''
-
 class Target(object):
     """The target for which armwiz will generate a project. This could be
     a development board or just an MCU."""
@@ -487,15 +468,18 @@ def main():
         '.git/modules/libraries']
     makeProjectTree(projectTempDir,projectSubdirectories)
 
+    # Create target List
+    targetList = []
+    if type(arguments.targetname) != list:
+        pass
+    else:
+        for section in arguments.targetname:
+            targetList.append(makeObjectFromConfigInfo(configurationInformation,section))
+
     # Create library List
     libraryList = []
     for section in arguments.libraryname:
         libraryList.append(makeObjectFromConfigInfo(configurationInformation,section))
-
-    # Create target List
-    targetList = []
-    for section in arguments.targetname:
-        targetList.append(makeObjectFromConfigInfo(configurationInformation,section))
 
     # Deploy libraries
     for library in libraryList:
@@ -507,37 +491,7 @@ def main():
         else:
             raise Exception('    - FAIL: Directory {} does not exist.')
 
-    targetList = []
-    thisTarget = Target()
-    for targetName in arguments.targetname:
-        for section in configurationInformation:
-            try:
-                if configurationInformation.get('{}'.format(section),'cli_argument') == targetName:
-                    sys.stdout.flush()
-                    thisTarget.proper_name = configurationInformation.get('{}'.format(section),'proper_name')
-                    thisTarget.mcu = configurationInformation.get('{}'.format(section),'mcu')
-                    thisTarget.cli_argument = configurationInformation.get('{}'.format(section),'cli_argument')
-                    thisTarget.manufacturer = configurationInformation.get('{}'.format(section),'manufacturer')
-                    thisTarget.short_description = configurationInformation.get('{}'.format(section),'short_description')
-                    thisTarget.long_description = configurationInformation.get('{}'.format(section),'long_description')
-                    thisTarget.website_url = configurationInformation.get('{}'.format(section),'website_url')
-                    thisTarget.stm32cube_version = configurationInformation.get('{}'.format(section),'stm32cube_version')
-                    thisTarget.endianness = configurationInformation.get('{}'.format(section),'endianness')
-                    thisTarget.arm_core = configurationInformation.get('{}'.format(section),'arm_core')
-                    thisTarget.instruction_set = configurationInformation.get('{}'.format(section),'instruction_set')
-                    thisTarget.cmsis_mcu_family = configurationInformation.get('{}'.format(section),'cmsis_mcu_family')
-                    try:
-                        print('Deploying {}/examples/{}... '.format(projectTempDir,thisTarget.mcu),end="")
-                        sys.stdout.flush()
-                    except:
-                        raise
-            except configparser.NoOptionError:
-                pass
-            except:
-                raise
-
     # This is the blinky test copy
-    exampleName = 'blinky'
     mainDotC = 'resources/stm32/source/main.c'
         # - Needs GPIO port (e.g. GPIOD)
         # - Needs GPOIO pin (e.g. GPIO_PIN_2)
@@ -562,22 +516,28 @@ def main():
         # - Needs the location of several target-specific folders
     readme = 'resources/readme.txt'
 
-    # Deploy blinky example
+    blinkyExampleList = {
+        # <source file> : <destination file>
+        mainDotC : 'source',
+        mainDotH : 'include',
+        startupFile : 'source',
+        itDotC : 'source',
+        itDotH : 'include',
+        systemFile : 'source',
+        halConf : 'include',
+        makefile : '.',
+        readme : '.',
+        linkerFile : '.'
+    }
+    exampleName = 'blinky'
     exampleSubfolders = ['binary','include','source']
     makeProjectTree("{}/examples/{}".format(projectTempDir,exampleName),exampleSubfolders)
     call('cd {}/examples/{}; ln -s ../../libraries libraries'.format(projectTempDir,exampleName),shell=True)
-    call('cp {} {}/examples/{}/source/'.format(mainDotC,projectTempDir,exampleName),shell=True)
-    call('cp {} {}/examples/{}/include/'.format(mainDotH,projectTempDir,exampleName),shell=True)
-    call('cp {} {}/examples/{}/source/'.format(startupFile,projectTempDir,exampleName),shell=True)
-    call('cp {} {}/examples/{}/source/'.format(itDotC,projectTempDir,exampleName),shell=True)
-    call('cp {} {}/examples/{}/include/'.format(itDotH,projectTempDir,exampleName),shell=True)
-    call('cp {} {}/examples/{}/source/'.format(systemFile,projectTempDir,exampleName),shell=True)
-    call('cp {} {}/examples/{}/include/'.format(halConf,projectTempDir,exampleName),shell=True)
-    call('cp {} {}/examples/{}/'.format(makefile,projectTempDir,exampleName),shell=True)
-    call('cp {} {}/examples/{}/'.format(readme,projectTempDir,exampleName),shell=True)
-    call('cp {} {}/examples/{}/'.format(linkerFile,projectTempDir,exampleName),shell=True)
+    for sourceFile in blinkyExampleList:
+        call('cp {} {}/examples/{}/{}/'.format(sourceFile,projectTempDir,exampleName,blinkyExampleList[sourceFile]),shell=True)
 
     # Update Makefile values
+    thisTarget = targetList[0]
     optionsList = {
         'PROJECT_NAME': arguments.projectname,
         'STM32CUBE_VERSION': thisTarget.stm32cube_version,
