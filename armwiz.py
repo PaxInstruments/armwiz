@@ -491,42 +491,42 @@ def main():
         else:
             raise Exception('    - FAIL: Directory {} does not exist.')
 
-    # This is the blinky test copy
-    mainDotC = 'resources/stm32/source/main.c'
-        # - Needs GPIO port (e.g. GPIOD)
-        # - Needs GPOIO pin (e.g. GPIO_PIN_2)
-    mainDotH = 'resources/stm32/include/main.h'
-        # - Needs HAL file (e.g. stm32f1xx_hal.h)
-    startupFile = 'libraries/STM32CubeF1/Drivers/CMSIS/Device/ST/STM32F1xx/Source/Templates/gcc/startup_stm32f103xb.s'
-        # - Needs core type (e.g. cortex-m3)
-        # - Needs FPU type (e.g. softfpv)
-        # - Needs instruciton set (e.g. thumb)
-        # - Needs BootRAM
-    itDotC = 'resources/stm32/source/stm32f1xx_it.c'
-        # - Needs interrupt handler .h file (e.g. stm32f1xx_it.h)
-    itDotH = 'resources/stm32/include/stm32f1xx_it.h'
-        # - Needs is own file name to prevent recursive inclusion (e.g. __STM32F1xx_IT_H)
-    systemFile = 'libraries/STM32CubeF1/Drivers/CMSIS/Device/ST/STM32F1xx/Source/Templates/system_stm32f1xx.c'
-    halConf = 'libraries/mbed/libraries/mbed/targets/cmsis/TARGET_STM/TARGET_STM32F1/stm32f1xx_hal_conf.h'
-        # - Copy this file and comment out unused libraries. There is a lot of target specific information in here.
-    # linkerFile = 'libraries/STM32CubeF1/Projects/STM32F103RB-Nucleo/Templates/TrueSTUDIO/STM32F103RB_Nucleo/STM32F103VB_FLASH.ld'
+    # # This is the blinky test copy
+    # mainDotC = 'resources/stm32/source/main.c'
+    #     # - Needs GPIO port (e.g. GPIOD)
+    #     # - Needs GPOIO pin (e.g. GPIO_PIN_2)
+    # mainDotH = 'resources/stm32/include/main.h'
+    #     # - Needs HAL file (e.g. stm32f1xx_hal.h)
+    # startupFile = 'libraries/STM32CubeF1/Drivers/CMSIS/Device/ST/STM32F1xx/Source/Templates/gcc/startup_stm32f103xb.s'
+    #     # - Needs core type (e.g. cortex-m3)
+    #     # - Needs FPU type (e.g. softfpv)
+    #     # - Needs instruciton set (e.g. thumb)
+    #     # - Needs BootRAM
+    # itDotC = 'resources/stm32/source/stm32f1xx_it.c'
+    #     # - Needs interrupt handler .h file (e.g. stm32f1xx_it.h)
+    # itDotH = 'resources/stm32/include/stm32f1xx_it.h'
+    #     # - Needs is own file name to prevent recursive inclusion (e.g. __STM32F1xx_IT_H)
+    # systemFile = 'libraries/STM32CubeF1/Drivers/CMSIS/Device/ST/STM32F1xx/Source/Templates/system_stm32f1xx.c'
+    # halConf = 'libraries/mbed/libraries/mbed/targets/cmsis/TARGET_STM/TARGET_STM32F1/stm32f1xx_hal_conf.h'
+    #     # - Copy this file and comment out unused libraries. There is a lot of target specific information in here.
+    # # linkerFile = 'libraries/STM32CubeF1/Projects/STM32F103RB-Nucleo/Templates/TrueSTUDIO/STM32F103RB_Nucleo/STM32F103VB_FLASH.ld'
     linkerFile = 'resources/stm32xxx.ld'
-        # - We need the per-target RAM and FLASH information. We can easily generate this file.
-    makefile = 'resources/Makefile'
-        # - Needs the location of several target-specific folders
-    readme = 'resources/readme.txt'
+    #     # - We need the per-target RAM and FLASH information. We can easily generate this file.
+    # makefile = 'resources/Makefile'
+    #     # - Needs the location of several target-specific folders
+    # readme = 'resources/readme.txt'
 
     blinkyExampleList = {
-        # <source file> : <destination file>
-        mainDotC : 'source',
-        mainDotH : 'include',
-        startupFile : 'source',
-        itDotC : 'source',
-        itDotH : 'include',
-        systemFile : 'source',
-        halConf : 'include',
-        makefile : '.',
-        readme : '.',
+        # <source file> : <destination subdirectory>
+        'resources/stm32/source/main.c' : 'source',
+        'resources/stm32/include/main.h' : 'include',
+        'libraries/STM32CubeF1/Drivers/CMSIS/Device/ST/STM32F1xx/Source/Templates/gcc/startup_stm32f103xb.s' : 'source',
+        'resources/stm32/source/stm32f1xx_it.c' : 'source',
+        'resources/stm32/include/stm32f1xx_it.h' : 'include',
+        'libraries/STM32CubeF1/Drivers/CMSIS/Device/ST/STM32F1xx/Source/Templates/system_stm32f1xx.c' : 'source',
+        'libraries/mbed/libraries/mbed/targets/cmsis/TARGET_STM/TARGET_STM32F1/stm32f1xx_hal_conf.h' : 'include',
+        'resources/Makefile' : '.',
+        'resources/readme.txt' : '.',
         linkerFile : '.'
     }
     exampleName = 'blinky'
