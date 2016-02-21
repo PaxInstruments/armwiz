@@ -71,6 +71,7 @@ import argparse
 import configparser
 import fileinput
 import ntpath
+import project
 
 ## Standard Python header information
 __author__ = "Charles Edward Pax"
@@ -82,46 +83,6 @@ __version__ = "0.0.1"
 __maintainer__ = "Charles Pax"
 __email__ = "charles.pax@gmail.com"
 __status__ = "Development"
-
-#######################
-## Class definitions ##
-#######################
-
-class ConfigObject:
-    """A config object."""
-
-class Target(object):
-    """The target for which armwiz will generate a project. This could be
-    a development board or just an MCU."""
-    # TODO Add appropriate docstring
-    def __init__(self):
-        self.item_type = 'target'
-        self.proper_name = ''
-        self.mcu = ''
-        self.cli_argument = ''
-        self.core = ''
-        self.manufacturer = ''
-        self.short_description = ''
-        self.long_description = ''
-        self.website_url = ''
-        self.stm32cube_version = ''
-        self.endianness = ''
-        self.arm_core = ''
-        self.instruction_set = ''
-        self.cmsis_mcu_family = ''
-
-class Library(object):
-    """Libraries in git."""
-    # TODO Add appropriate docstring
-    def __init__(self):
-        self.item_type = 'library'
-        self.proper_name = ''
-        self.cli_argument = ''
-        self.short_description = ''
-        self.long_description = ''
-        self.git_name = ''
-        self.git_url = ''
-        self.website_url = ''
 
 ##########################
 ## Function definitions ##
@@ -229,102 +190,6 @@ def parseArguments():
         action='version')
     return parser
 
-def makePath(paths):
-    """Create a directory path from a string or list of strings and return
-    the same path or list.
-
-    Usage:
-        makePath('<directory>')
-        makePath(['<directory 1>','<directory 2>',...,'<directory n>'])
-    Example:
-    >>> makePath(['temp/dir1','temp/hello/dir2'])
-    True
-    $ tree temp/
-    temp/
-    ├── dir1
-    └── hello
-        └── dir2
-    """
-    # TODO makePath() should verify the path it made exists and return the path
-    #      it made, not the path it was told to make.
-    # TODO Improve the error handling. It seems messy.
-    try:
-        for entry in paths:
-            if not type(entry) is str:
-                raise TypeError("The type for each path must be a string. type({}) gives {}".format(entry,type(entry)))
-    except TypeError:
-        raise TypeError("The type for each path must be a string. type({}) gives {}".format(entry,type(entry)))
-    if type(paths) is str:
-        try:
-            os.makedirs(paths)
-            return paths
-        except:
-            raise
-    elif type(paths) is list:
-        for path in paths:
-            makePath(path)
-        return paths
-    else:
-        raise TypeError("Value for each path must be a string or a list of strings. {} is not a string.".format(path))
-
-def makeTemporaryDirectory():
-    """Creates /tmp/armwiz/<number> and returns path.
-
-    The <number> is iterated and will be the lowest available positive integer.
-
-    Usage:
-    myTempDir = makeTemporaryDirectory()
-    """
-    try:
-        iteratedDir = 0
-        while os.path.exists('/tmp/armwiz/{}'.format(iteratedDir)):
-            iteratedDir += 1
-        path = '/tmp/armwiz/{}'.format(iteratedDir)
-        makePath(path)
-        if os.path.exists(path):
-            return path
-        else:
-            raise Exception('Could not make the path.')
-    except:
-        raise
-
-def makeProjectTree(root,paths):
-    """ Create a directory tree inside of root directory and return True.
-    Usage:
-        makeProjectTree(<rootDirectory>,<list of paths>)
-
-    Example:
-    >>> makeProjectTree('~/myProject',['subDir1','subDir2'])
-    $ tree ~/myProject # Executed in terminal
-    ~/myProject
-    ├── subDir1
-    └── subDir2
-    """
-    # TODO Do something such that git knows to also track the empty directories.
-    #      Add a .git file to each directory or use other method.
-    # TODO Use the --git flag (arguments.git) to enable/disable git commands.
-    if not type(root) is str:
-        raise TypeError("Value for <root directory> must be a string. type({}) gives {}".format(root,type(root)))
-    try:
-        makePath(root)
-        call('cd {}; git init -q'.format(root),shell=True)
-    except FileExistsError:
-        raise FileExistsError("The directory {} already exists.".format(root))
-    if type(paths) is str:
-        try:
-            makePath("{}/{}".format(root,paths))
-        except FileExistsError:
-            pass
-        except:
-            raise
-    elif type(paths) is list:
-        for path in paths:
-            try:
-                makePath("{}/{}".format(root,path))
-            except:
-                raise
-    return True
-
 def deployLibrary(targetProjectRootPath,library):
     """Deploy library to a project directory
     """
@@ -402,7 +267,7 @@ def writeOption(inputFile,variable,option):
 
 def makeObjectFromConfigInfo(configInfo,section):
     """Return an object"""
-    thisObject=ConfigObject()
+    thisObject = project.ConfigObject()
     sectionDict = dict(configInfo.items(section))
     for item in sectionDict:
         setattr(thisObject,item,configInfo.get(section,item))
@@ -456,7 +321,7 @@ def main():
         exit()
 
     # Create temporary project directory
-    emptyTempDir = makeTemporaryDirectory()
+    emptyTempDir = project.makeTemporaryDirectory()
     projectTempDir = '{}/{}'.format(emptyTempDir,arguments.projectname)
     print('Project temporary location: {}'.format(projectTempDir))
     sys.stdout.flush()
@@ -466,7 +331,7 @@ def main():
         'binary',
         'examples',
         '.git/modules/libraries']
-    makeProjectTree(projectTempDir,projectSubdirectories)
+    project.makeProjectTree(projectTempDir,projectSubdirectories)
 
     # Create target List
     targetList = []
@@ -531,7 +396,7 @@ def main():
     }
     exampleName = 'blinky'
     exampleSubfolders = ['binary','include','source']
-    makeProjectTree("{}/examples/{}".format(projectTempDir,exampleName),exampleSubfolders)
+    project.makeProjectTree("{}/examples/{}".format(projectTempDir,exampleName),exampleSubfolders)
     call('cd {}/examples/{}; ln -s ../../libraries libraries'.format(projectTempDir,exampleName),shell=True)
     for sourceFile in blinkyExampleList:
         call('cp {} {}/examples/{}/{}/'.format(sourceFile,projectTempDir,exampleName,blinkyExampleList[sourceFile]),shell=True)
