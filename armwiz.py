@@ -63,7 +63,7 @@
 #      parent class.
 
 ## Import standard libraries
-from subprocess import call
+import subprocess
 import os
 import sys
 import errno
@@ -190,34 +190,7 @@ def parseArguments():
         action='version')
     return parser
 
-def deployLibrary(targetProjectRootPath,library):
-    """Deploy library to a project directory
-    """
-    # TODO If library is not in the armwiz libraries directory, git submodule init into armwiz, then copy into project.
-    # TODO Use the --git flag (arguments.git) to enable/disable git commands.
-    if not os.path.exists(targetProjectRootPath):
-        raise Exception("The target path {} does not exist.".format(targetProjectRootPath))
-    try:
-        call('rsync -ac libraries/{} {}/libraries/'.format(library.git_name,targetProjectRootPath,library.git_name),shell=True)
-    except:
-        raise Exception('ERROR using rsync to copy {}'.format(library.proper_name))
-    try:
-        call('rsync -ac .git/modules/libraries/{} {}/.git/modules/libraries/'.format(library.git_name,targetProjectRootPath,library.git_name),shell=True)
-        moduleFile = open('{}/.gitmodules'.format(targetProjectRootPath), 'a')
-        moduleFile.write("\n[submodule \"libraries/{}\"]\n".format(library.git_name))
-        moduleFile.write("\tpath = libraries/{}\n".format(library.git_name))
-        moduleFile.write("\turl = {}\n".format(library.git_url))
-        moduleFile.close()
-    except:
-        raise Exception('ERROR copying git stuff')
-    try:
-        call('cd {}; git add .gitmodules; git add libraries/{}; git submodule init -q '.format(targetProjectRootPath,library.git_name),shell=True)
-    except:
-        raise
-    try:
-        call("cd {}; git commit -qam 'armwiz added {}'".format(targetProjectRootPath,library.proper_name),shell=True)
-    except:
-        raise
+
 
 # def is_valid_file(parser, arg):
 #     # TODO Add appropriate docstring
@@ -227,51 +200,7 @@ def deployLibrary(targetProjectRootPath,library):
 #     else:
 #         return open(arg, 'r')  # return an open file handle
 
-def printConfigList(entryType,configInfo):
-    """Print a list of configuration entries and descriptions and return True."""
-    print('Argument Name  Argument Description')
-    print('-------------  --------------------------------')
-    for entry in configInfo:
-        try:
-            if configurationInformation.get('{}'.format(entry),'item_type') == entryType:
-                print('{:<12}   {}'.format(configurationInformation.get(entry,'cli_argument'),configurationInformation.get(entry,'short_description')))
-        except configparser.NoOptionError:
-            pass
-        except:
-            raise
-    return True
 
-def writeOption(inputFile,variable,option):
-    """Assign a value to a variable.
-
-    Usage:
-    writeOption(<input file>,<variable name>,<new value>)
-
-    Example:
-    writeOption('Makefile','STM32CUBE_VERSION','STM32CubeF1')
-    """
-    # TODO Make this function accept a dictionary and input file. Recursive use
-    #      of self similar to makeProjectTree()
-    lines = []
-    with open(inputFile) as workingFile:
-        for line in workingFile:
-            index=line.find(variable)
-            if index == 0:
-                line = line.replace(line, "{}={}\n".format(variable,option))
-            lines.append(line)
-    workingFile.close()
-    with open(inputFile,'w') as outputFile:
-            for line in lines:
-                outputFile.write(line)
-    outputFile.close()
-
-def makeObjectFromConfigInfo(configInfo,section):
-    """Return an object"""
-    thisObject = project.ConfigObject()
-    sectionDict = dict(configInfo.items(section))
-    for item in sectionDict:
-        setattr(thisObject,item,configInfo.get(section,item))
-    return thisObject
 
 def main():
     """
@@ -309,20 +238,19 @@ def main():
     # Hangle all do-one-thing-and-exit arguments
     if arguments.L == True:
         # Print a list of all supported libraries
-        printConfigList('library',configurationInformation)
+        project.printConfigList('library',configurationInformation)
         exit()
     elif arguments.T == True:
         # Print a list of all supported targets
-        printConfigList('target',configurationInformation)
+        project.printConfigList('target',configurationInformation)
         exit()
     elif arguments.projectname == None:
         # If no project name is give, exit
-        parser.print_help()
+        project.parser.print_help()
         exit()
 
     # Create temporary project directory
-    emptyTempDir = project.makeTemporaryDirectory()
-    projectTempDir = '{}/{}'.format(emptyTempDir,arguments.projectname)
+    projectTempDir = '{}/{}'.format(project.makeTemporaryDirectory(),arguments.projectname)
     print('Project temporary location: {}'.format(projectTempDir))
     sys.stdout.flush()
     projectSubdirectories = [
@@ -334,23 +262,22 @@ def main():
     project.makeProjectTree(projectTempDir,projectSubdirectories)
 
     # Create target List
-    targetList = []
     if type(arguments.targetname) != list:
         pass
     else:
-        for section in arguments.targetname:
-            targetList.append(makeObjectFromConfigInfo(configurationInformation,section))
+        targetList = project.makeObjectList(configurationInformation,arguments.targetname)
 
     # Create library List
-    libraryList = []
-    for section in arguments.libraryname:
-        libraryList.append(makeObjectFromConfigInfo(configurationInformation,section))
+    if type(arguments.libraryname) != list:
+        pass
+    else:
+        libraryList = project.makeObjectList(configurationInformation,arguments.libraryname)
 
     # Deploy libraries
     for library in libraryList:
         print('Deploying {}/libraries/{}... '.format(projectTempDir,library.git_name),end="")
         sys.stdout.flush()
-        deployLibrary(projectTempDir,library)
+        project.deployLibrary(projectTempDir,library)
         if os.path.exists("{}/libraries/{}/".format(projectTempDir,library.git_name)):
             print('Okay')
         else:
@@ -397,9 +324,9 @@ def main():
     exampleName = 'blinky'
     exampleSubfolders = ['binary','include','source']
     project.makeProjectTree("{}/examples/{}".format(projectTempDir,exampleName),exampleSubfolders)
-    call('cd {}/examples/{}; ln -s ../../libraries libraries'.format(projectTempDir,exampleName),shell=True)
+    subprocess.call('cd {}/examples/{}; ln -s ../../libraries libraries'.format(projectTempDir,exampleName),shell=True)
     for sourceFile in blinkyExampleList:
-        call('cp {} {}/examples/{}/{}/'.format(sourceFile,projectTempDir,exampleName,blinkyExampleList[sourceFile]),shell=True)
+        subprocess.call('cp {} {}/examples/{}/{}/'.format(sourceFile,projectTempDir,exampleName,blinkyExampleList[sourceFile]),shell=True)
 
     # Update Makefile values
     thisTarget = targetList[0]
@@ -414,10 +341,10 @@ def main():
     }
     for option in optionsList:
         # print('{}: {}'.format(option,optionsList[option]))
-        writeOption("{}/examples/{}/Makefile".format(projectTempDir,exampleName),option,optionsList[option])
+        project.writeOption("{}/examples/{}/Makefile".format(projectTempDir,exampleName),option,optionsList[option])
 
     # Move temporary project directory to the final location
-    call('mv {} {}'.format(projectTempDir,arguments.output),shell=True)
+    subprocess.call('mv {} {}'.format(projectTempDir,arguments.output),shell=True)
 
     # TODO Write readme.md files to the temporary project directory tree folders
     # TODO Generate Makefile
