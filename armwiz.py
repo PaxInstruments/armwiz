@@ -141,6 +141,12 @@ def parseArguments():
         default=['no-target'],
         action="append",
         required=False)
+    parser.add_argument('-e','--examplename',
+        help='Specify which examples to copy via -e <examplename>',
+        metavar="<examplename>",
+        default=['binky'],
+        action="append",
+        required=False)
     parser.add_argument('-l','--libraryname',
         help='Specify a library to include via -l <libraryname>',
         metavar="<libraryname>",
@@ -152,6 +158,10 @@ def parseArguments():
         required=False)
     parser.add_argument('-T',
         help='List all targets available to -t <targetname> and exit',
+        action="store_true",
+        required=False)
+    parser.add_argument('-E',
+        help='List all examples available to -e <examplename> and exit',
         action="store_true",
         required=False)
     parser.add_argument('-c','--configfile',
@@ -241,6 +251,10 @@ def main():
         # Print a list of all supported targets
         project.printConfigList('target',configurationInformation)
         exit()
+    elif arguments.E == True:
+        # Print a list of all supported targets
+        project.printConfigList('example',configurationInformation)
+        exit()
     elif arguments.projectname == None:
         # If no project name is give, exit
         parser.print_help()
@@ -284,15 +298,12 @@ def main():
         else:
             raise Exception('    - FAIL: Directory {} does not exist.')
 
-
     try:
         # targetList[0] is a dummy target. Skip it.
         thisTarget = targetList[1]
     except UnboundLocalError:
         thisTarget = targetList[0]
         pass
-
-    linkerFile = 'resources/stm32xxx.ld'
 
     exampleName = 'blinky'
     exampleSubfolders = ['binary','include','source']
@@ -301,16 +312,16 @@ def main():
     startupFile = subprocess.getoutput('find {}/libraries/STM32CubeF* -iname startup_* | grep -iv projects | grep gcc | grep -i {}'.format(projectTempDir,thisTarget.cmsis_mcu_family))
     blinkyExampleList = {
         # <source file> : <destination subdirectory>
-        'resources/stm32/source/main.c' : 'source',  # Needs GPIO port (e.g. GPIOD), Needs GPOIO pin (e.g. GPIO_PIN_2)
-        'resources/stm32/include/main.h' : 'include',  # Needs HAL file (e.g. stm32f1xx_hal.h)
+        'resources/blinky/source/main.c' : 'source',  # Needs GPIO port (e.g. GPIOD), Needs GPOIO pin (e.g. GPIO_PIN_2)
+        'resources/blinky/include/main.h' : 'include',  # Needs HAL file (e.g. stm32f1xx_hal.h)
         startupFile : 'source',  # Needs core type (e.g. cortex-m3), Needs FPU type (e.g. softfpv), Needs instruciton set (e.g. thumb), Needs BootRAM
-        'resources/stm32/source/stm32f1xx_it.c' : 'source',  # Needs interrupt handler .h file (e.g. stm32f1xx_it.h)
-        'resources/stm32/include/stm32f1xx_it.h' : 'include',  # Needs is own file name to prevent recursive inclusion (e.g. __STM32F1xx_IT_H)
+        'resources/blinky/source/stm32f1xx_it.c' : 'source',  # Needs interrupt handler .h file (e.g. stm32f1xx_it.h)
+        'resources/blinky/include/stm32f1xx_it.h' : 'include',  # Needs is own file name to prevent recursive inclusion (e.g. __STM32F1xx_IT_H)
         'libraries/STM32CubeF1/Drivers/CMSIS/Device/ST/STM32F1xx/Source/Templates/system_stm32f1xx.c' : 'source',
         'libraries/mbed/libraries/mbed/targets/cmsis/TARGET_STM/TARGET_STM32F1/stm32f1xx_hal_conf.h' : 'include',  # Copy this file and comment out unused libraries. There is a lot of target specific information in here.
-        'resources/Makefile' : '.',  # Needs the location of several target-specific folders
-        'resources/readme.txt' : '.',
-        linkerFile : '.'  # We need the per-target RAM and FLASH information. We can easily generate this file.
+        thisTarget.makefile : '.',  # Needs the location of several target-specific folders
+        thisTarget.readme : '.',
+        thisTarget.linker_file : '.'  # We need the per-target RAM and FLASH information. We can easily generate this file.
     }
     for sourceFile in blinkyExampleList:
         subprocess.call('cp {} {}/examples/{}/{}/'.format(sourceFile,projectTempDir,exampleName,blinkyExampleList[sourceFile]),shell=True)
@@ -323,7 +334,7 @@ def main():
         'ARM_CORE': thisTarget.arm_core,
         'INSTRUCTION_SET': thisTarget.instruction_set,
         'CMSIS_MCU_FAMILY': thisTarget.cmsis_mcu_family,
-        'LINKER_SCRIPT': ntpath.basename(linkerFile)
+        'LINKER_SCRIPT': ntpath.basename(thisTarget.linker_file)
     }
     for option in optionsList:
         project.writeOption("{}/examples/{}/Makefile".format(projectTempDir,exampleName),option,optionsList[option])
