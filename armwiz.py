@@ -285,6 +285,7 @@ def main():
             raise Exception('    - FAIL: Directory {} does not exist.')
 
     linkerFile = 'resources/stm32xxx.ld'
+    # linkerFile = 'resources/armwiz-linker.ld'
 
     blinkyExampleList = {
         # <source file> : <destination subdirectory>
@@ -308,8 +309,10 @@ def main():
 
     # Update Makefile values
     try:
-        thisTarget = targetList[0]
+        # targetList[0] is a dummy target. Skip it.
+        thisTarget = targetList[1]
     except UnboundLocalError:
+        thisTarget = targetList[0]
         pass
     optionsList = {
         'PROJECT_NAME': arguments.projectname,
