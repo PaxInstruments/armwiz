@@ -284,14 +284,28 @@ def main():
         else:
             raise Exception('    - FAIL: Directory {} does not exist.')
 
-    linkerFile = 'resources/stm32xxx.ld'
-    # linkerFile = 'resources/armwiz-linker.ld'
 
+    try:
+        # targetList[0] is a dummy target. Skip it.
+        thisTarget = targetList[1]
+    except UnboundLocalError:
+        thisTarget = targetList[0]
+        pass
+
+    linkerFile = 'resources/stm32xxx.ld'
+
+    exampleName = 'blinky'
+    exampleSubfolders = ['binary','include','source']
+    project.makeProjectTree("{}/examples/{}".format(projectTempDir,exampleName),exampleSubfolders)
+    subprocess.call('cd {}/examples/{}; ln -s ../../libraries libraries'.format(projectTempDir,exampleName),shell=True)
+    startupFile = subprocess.getoutput('find {}/libraries/STM32CubeF* -iname startup_* | grep -iv projects | grep gcc | grep -i {}'.format(projectTempDir,thisTarget.cmsis_mcu_family))
+    print('startupFile:',startupFile)
+    print('thisTarget:',thisTarget.cmsis_mcu_family)
     blinkyExampleList = {
         # <source file> : <destination subdirectory>
         'resources/stm32/source/main.c' : 'source',  # Needs GPIO port (e.g. GPIOD), Needs GPOIO pin (e.g. GPIO_PIN_2)
         'resources/stm32/include/main.h' : 'include',  # Needs HAL file (e.g. stm32f1xx_hal.h)
-        'libraries/STM32CubeF1/Drivers/CMSIS/Device/ST/STM32F1xx/Source/Templates/gcc/startup_stm32f103xb.s' : 'source',  # Needs core type (e.g. cortex-m3), Needs FPU type (e.g. softfpv), Needs instruciton set (e.g. thumb), Needs BootRAM
+        startupFile : 'source',  # Needs core type (e.g. cortex-m3), Needs FPU type (e.g. softfpv), Needs instruciton set (e.g. thumb), Needs BootRAM
         'resources/stm32/source/stm32f1xx_it.c' : 'source',  # Needs interrupt handler .h file (e.g. stm32f1xx_it.h)
         'resources/stm32/include/stm32f1xx_it.h' : 'include',  # Needs is own file name to prevent recursive inclusion (e.g. __STM32F1xx_IT_H)
         'libraries/STM32CubeF1/Drivers/CMSIS/Device/ST/STM32F1xx/Source/Templates/system_stm32f1xx.c' : 'source',
@@ -300,20 +314,10 @@ def main():
         'resources/readme.txt' : '.',
         linkerFile : '.'  # We need the per-target RAM and FLASH information. We can easily generate this file.
     }
-    exampleName = 'blinky'
-    exampleSubfolders = ['binary','include','source']
-    project.makeProjectTree("{}/examples/{}".format(projectTempDir,exampleName),exampleSubfolders)
-    subprocess.call('cd {}/examples/{}; ln -s ../../libraries libraries'.format(projectTempDir,exampleName),shell=True)
     for sourceFile in blinkyExampleList:
         subprocess.call('cp {} {}/examples/{}/{}/'.format(sourceFile,projectTempDir,exampleName,blinkyExampleList[sourceFile]),shell=True)
 
     # Update Makefile values
-    try:
-        # targetList[0] is a dummy target. Skip it.
-        thisTarget = targetList[1]
-    except UnboundLocalError:
-        thisTarget = targetList[0]
-        pass
     optionsList = {
         'PROJECT_NAME': arguments.projectname,
         'STM32CUBE_VERSION': thisTarget.stm32cube_version,

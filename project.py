@@ -10,6 +10,11 @@ import configparser
 class ConfigObject:
     """Empty object"""
 
+def find(name, path):
+    for root, dirs, files in os.walk(path):
+        if name in files:
+            return os.path.join(root, name)
+
 def makePath(pathList):
     """Create a directory path from a string or list of strings and return
     the same path or list.
