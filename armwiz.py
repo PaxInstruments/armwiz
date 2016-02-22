@@ -299,8 +299,6 @@ def main():
     project.makeProjectTree("{}/examples/{}".format(projectTempDir,exampleName),exampleSubfolders)
     subprocess.call('cd {}/examples/{}; ln -s ../../libraries libraries'.format(projectTempDir,exampleName),shell=True)
     startupFile = subprocess.getoutput('find {}/libraries/STM32CubeF* -iname startup_* | grep -iv projects | grep gcc | grep -i {}'.format(projectTempDir,thisTarget.cmsis_mcu_family))
-    print('startupFile:',startupFile)
-    print('thisTarget:',thisTarget.cmsis_mcu_family)
     blinkyExampleList = {
         # <source file> : <destination subdirectory>
         'resources/stm32/source/main.c' : 'source',  # Needs GPIO port (e.g. GPIOD), Needs GPOIO pin (e.g. GPIO_PIN_2)
