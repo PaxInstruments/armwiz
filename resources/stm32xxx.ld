@@ -10,19 +10,83 @@
 /***************/
 /*   Memory    */
 /***************/
-/* For STM32F103RCT6 */
-
-#if defined STM32F103xE
+#if defined STM32F100xB
  MEMORY {
-    FLASH (rx) : ORIGIN = 0x08000000, LENGTH = 256K
-    RAM (xrw)  : ORIGIN = 0x20000000, LENGTH = 64K
+    FLASH (rx) : ORIGIN = 0x08000000, LENGTH = 128K
+    RAM (xrw)  : ORIGIN = 0x20000000, LENGTH = 8K
+ }
+#elif defined STM32F100xE
+ MEMORY {
+    FLASH (rx) : ORIGIN = 0x08000000, LENGTH = 512K
+    RAM (xrw)  : ORIGIN = 0x20000000, LENGTH = 32K
+ }
+#elif defined STM32F101x6
+ MEMORY {
+    FLASH (rx) : ORIGIN = 0x08000000, LENGTH = 32K
+    RAM (xrw)  : ORIGIN = 0x20000000, LENGTH = 6K
+ }
+#elif defined STM32F101xB
+ MEMORY {
+    FLASH (rx) : ORIGIN = 0x08000000, LENGTH = 128K
+    RAM (xrw)  : ORIGIN = 0x20000000, LENGTH = 16K
+ }
+#elif defined STM32F101xE
+ MEMORY {
+    FLASH (rx) : ORIGIN = 0x08000000, LENGTH = 512K
+    RAM (xrw)  : ORIGIN = 0x20000000, LENGTH = 48K
+ }
+#elif defined STM32F101xG
+ MEMORY {
+    FLASH (rx) : ORIGIN = 0x08000000, LENGTH = 1000K
+    RAM (xrw)  : ORIGIN = 0x20000000, LENGTH = 80K
+ }
+#elif defined STM32F102x6
+ MEMORY {
+    FLASH (rx) : ORIGIN = 0x08000000, LENGTH = 32K
+    RAM (xrw)  : ORIGIN = 0x20000000, LENGTH = 6K
+ }
+#elif defined STM32F102xB
+ MEMORY {
+    FLASH (rx) : ORIGIN = 0x08000000, LENGTH = 128K
+    RAM (xrw)  : ORIGIN = 0x20000000, LENGTH = 16K
+ }
+#elif defined STM32F103x6
+ MEMORY {
+    FLASH (rx) : ORIGIN = 0x08000000, LENGTH = 32K
+    RAM (xrw)  : ORIGIN = 0x20000000, LENGTH = 10K
  }
 #elif defined STM32F103xB
  MEMORY {
+    FLASH (rx) : ORIGIN = 0x08000000, LENGTH = 128K
+    RAM (xrw)  : ORIGIN = 0x20000000, LENGTH = 20K
+ }
+#elif defined STM32F103xE
+ MEMORY {
+    FLASH (rx) : ORIGIN = 0x08000000, LENGTH = 512K
+    RAM (xrw)  : ORIGIN = 0x20000000, LENGTH = 64K
+ }
+#elif defined STM32F103xG
+ MEMORY {
+    FLASH (rx) : ORIGIN = 0x08000000, LENGTH = 1000K
+    RAM (xrw)  : ORIGIN = 0x20000000, LENGTH = 96K
+ }
+#elif defined STM32F105xC
+ MEMORY {
     FLASH (rx) : ORIGIN = 0x08000000, LENGTH = 256K
     RAM (xrw)  : ORIGIN = 0x20000000, LENGTH = 64K
  }
-#endif
+#elif defined STM32F107xC
+ MEMORY {
+    FLASH (rx) : ORIGIN = 0x08000000, LENGTH = 256K
+    RAM (xrw)  : ORIGIN = 0x20000000, LENGTH = 64K
+ }
+#else
+/* Using the smallest values */
+ MEMORY {
+    FLASH (rx) : ORIGIN = 0x08000000, LENGTH = 32K
+    RAM (xrw)  : ORIGIN = 0x20000000, LENGTH = 6K
+ }
+ #endif
 
 ENTRY(Reset_Handler) /* Entry point of the reset handler */
 _estack = ORIGIN(RAM) + LENGTH(RAM);
