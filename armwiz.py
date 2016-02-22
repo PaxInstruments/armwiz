@@ -138,6 +138,7 @@ def parseArguments():
     parser.add_argument('-t','--targetname',
         help='Specify target microcontroller or processor via -t <targetname>',
         metavar="<targetname>",
+        default=['no-target'],
         action="append",
         required=False)
     parser.add_argument('-l','--libraryname',
@@ -231,7 +232,7 @@ def main():
     except:
         raise
 
-    # Hangle all do-one-thing-and-exit arguments
+    # Handle all do-one-thing-and-exit arguments
     if arguments.L == True:
         # Print a list of all supported libraries
         project.printConfigList('library',configurationInformation)
@@ -242,7 +243,7 @@ def main():
         exit()
     elif arguments.projectname == None:
         # If no project name is give, exit
-        project.parser.print_help()
+        parser.print_help()
         exit()
 
     # Create temporary project directory
@@ -258,16 +259,20 @@ def main():
     project.makeProjectTree(projectTempDir,projectSubdirectories)
 
     # Create target List
-    if type(arguments.targetname) != list:
+    if type(arguments.targetname) == list:
+        targetList = project.makeObjectList(configurationInformation,arguments.targetname)
+    elif type(arguments.targetname) == type(None):
         pass
     else:
-        targetList = project.makeObjectList(configurationInformation,arguments.targetname)
+        raise Exception("arguments.targetname is not a list. type(arguments.targetname) is",type(arguments.targetname))
 
     # Create library List
-    if type(arguments.libraryname) != list:
+    if type(arguments.libraryname) == list:
+        libraryList = project.makeObjectList(configurationInformation,arguments.libraryname)
+    elif type(arguments.libraryname) == type(None):
         pass
     else:
-        libraryList = project.makeObjectList(configurationInformation,arguments.libraryname)
+        raise Exception("arguments.libraryname is not a list. type(arguments.libraryname) is",type(arguments.libraryname))
 
     # Deploy libraries
     for library in libraryList:
@@ -302,7 +307,10 @@ def main():
         subprocess.call('cp {} {}/examples/{}/{}/'.format(sourceFile,projectTempDir,exampleName,blinkyExampleList[sourceFile]),shell=True)
 
     # Update Makefile values
-    thisTarget = targetList[0]
+    try:
+        thisTarget = targetList[0]
+    except UnboundLocalError:
+        pass
     optionsList = {
         'PROJECT_NAME': arguments.projectname,
         'STM32CUBE_VERSION': thisTarget.stm32cube_version,
@@ -313,7 +321,6 @@ def main():
         'LINKER_SCRIPT': ntpath.basename(linkerFile)
     }
     for option in optionsList:
-        # print('{}: {}'.format(option,optionsList[option]))
         project.writeOption("{}/examples/{}/Makefile".format(projectTempDir,exampleName),option,optionsList[option])
 
     # Move temporary project directory to the final location

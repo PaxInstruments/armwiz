@@ -133,6 +133,7 @@ def writeOption(inputFile,variable,option):
     """
     # TODO Make this function accept a dictionary and input file. Recursive use
     #      of self similar to makeProjectTree()
+    # TODO Trim white space when doing search and replace
     lines = []
     with open(inputFile) as workingFile:
         for line in workingFile:
