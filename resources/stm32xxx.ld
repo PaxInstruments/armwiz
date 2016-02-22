@@ -11,10 +11,18 @@
 /*   Memory    */
 /***************/
 /* For STM32F103RCT6 */
+
+#if defined STM32F103xE
  MEMORY {
     FLASH (rx) : ORIGIN = 0x08000000, LENGTH = 256K
     RAM (xrw)  : ORIGIN = 0x20000000, LENGTH = 64K
  }
+#elif defined STM32F103xB
+ MEMORY {
+    FLASH (rx) : ORIGIN = 0x08000000, LENGTH = 256K
+    RAM (xrw)  : ORIGIN = 0x20000000, LENGTH = 64K
+ }
+#endif
 
 ENTRY(Reset_Handler) /* Entry point of the reset handler */
 _estack = ORIGIN(RAM) + LENGTH(RAM);

@@ -9,6 +9,7 @@
 # Overview =================================================================== #
 # This Makefile...
 # TODO Write a good overview explaining this file to a novice.
+# TODO Add arm-none-eabi-cpp -DSTM32F103xEx stm32xxx.ld | grep -v '^#' > output.ld
 
 # Project Specific Definitions =============================================== #
 # This section should not need to be changed if your initial project generation
@@ -139,6 +140,7 @@ CMSIS_MCU+=-D${CMSIS_MCU_FAMILY}
 # Instruction for installing this toolchain can be found at ___________.
 TOOLCHAIN_DIRECTORY=
 CC=${TOOLCHAIN_DIRECTORY}arm-none-eabi-gcc
+CPP=${TOOLCHAIN_DIRECTORY}arm-none-eabi-cpp
 CXX=${TOOLCHAIN_DIRECTORY}arm-none-eabi-g++
 LD=${TOOLCHAIN_DIRECTORY}arm-none-eabi-ld
 AR=${TOOLCHAIN_DIRECTORY}arm-none-eabi-ar
@@ -202,8 +204,9 @@ DEFS+=${CMSIS_MCU}
 # DEFS+=-DARM_MATH_CM3
 CFLAGS=-c $(MCFLAGS) $(DEFS) $(INCLUDES)
 CXXFLAGS=-c $(MCFLAGS) $(DEFS) $(INCLUDES) -std=c++11
+CPPFLAGS=-D${CMSIS_MCU_FAMILY}
 # LINKER FLAGS
-LDSCRIPT=${LINKER_SCRIPT}
+LDSCRIPT=output.ld
 LDFLAGS =-T $(LDSCRIPT) $(MCFLAGS) --specs=nosys.specs $(INCLUDES_LIBS) $(LINK_LIBS)
 
 ###
@@ -250,7 +253,8 @@ $(BINDIR)/$(BINBIN): $(BINDIR)/$(BINELF)
 #   $(CXX) $(OBJECTS) $(LDFLAGS) -o $@ to
 #   $(CC) $(OBJECTS) $(LDFLAGS) -o $@ if
 #   C linker is required.
-$(BINDIR)/$(BINELF): $(OBJECTS)
+
+$(BINDIR)/$(BINELF): $(OBJECTS) ${LDSCRIPT}
 	$(CXX) $(OBJECTS) $(LDFLAGS) -o $@
 	@echo "Linking complete!\n"
 	$(SIZE) $(BINDIR)/$(BINELF)
@@ -267,8 +271,11 @@ $(BINDIR)/$(BINELF): $(OBJECTS)
 	$(CC) $(CFLAGS) $< -o $@
 	@echo "Assambled "$<"!\n"
 
+${LDSCRIPT}: ${LINKER_SCRIPT}
+	${CPP} ${DEFS} $< | grep -v '^#' > $@
+
 clean:
-	rm -f $(OBJECTS) $(BINDIR)/$(BINELF) $(BINDIR)/$(BINHEX) $(BINDIR)/$(BINBIN) $(BINDIR)/output.map
+	rm -f $(OBJECTS) $(BINDIR)/$(BINELF) $(BINDIR)/$(BINHEX) $(BINDIR)/$(BINBIN) $(BINDIR)/output.map output.ld
 flash: $(BINDIR)/$(BINBIN)
 		st-flash write $(BINDIR)/$(BINBIN) 0x8000000
 deploy:
