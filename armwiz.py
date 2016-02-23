@@ -30,6 +30,8 @@
 # TODO Function: Generate README based on libraries copied.
 # TODO Ignore duplicated library options while parsing arguments. This could happen
 #      for free if armwiz first checks if a target library already exists.
+# TODO Use the tempfile module to make a temporary directory. This will be more
+#      cross-platform. See http://stackoverflow.com/questions/847850/cross-platform-way-of-getting-temp-directory-in-python
 
 # Icebox
 # ======
@@ -72,6 +74,7 @@ import configparser
 import fileinput
 import ntpath
 import project
+import tkinter
 
 ## Standard Python header information
 __author__ = "Charles Edward Pax"
@@ -144,7 +147,7 @@ def parseArguments():
     parser.add_argument('-e','--examplename',
         help='Specify which examples to copy via -e <examplename>',
         metavar="<examplename>",
-        default=['binky'],
+        default=['blinky'],
         action="append",
         required=False)
     parser.add_argument('-l','--libraryname',
@@ -288,6 +291,14 @@ def main():
     else:
         raise Exception("arguments.libraryname is not a list. type(arguments.libraryname) is",type(arguments.libraryname))
 
+    # Create example List
+    if type(arguments.examplename) == list:
+        exampleList = project.makeObjectList(configurationInformation,arguments.examplename)
+    elif type(arguments.examplename) == type(None):
+        pass
+    else:
+        raise Exception("arguments.examplename is not a list. type(arguments.examplename) is",type(arguments.examplename))
+
     # Deploy libraries
     for library in libraryList:
         print('Deploying {}/libraries/{}... '.format(projectTempDir,library.git_name),end="")
@@ -296,48 +307,32 @@ def main():
         if os.path.exists("{}/libraries/{}/".format(projectTempDir,library.git_name)):
             print('Okay')
         else:
-            raise Exception('    - FAIL: Directory {} does not exist.')
+            raise Exception('    - FAIL: Directory {} does not exist.'.format(library.git_name))
 
-    try:
-        # targetList[0] is a dummy target. Skip it.
+    # Deploy examples
+    for example in exampleList:
+        print('Deploying {}/example/{}... '.format(projectTempDir,example.example_directory),end="")
+        sys.stdout.flush()
+        # TODO Determine if armwiz should generate examples for multiple targets.
+        #      Generating only for first target for now.
         thisTarget = targetList[1]
-    except UnboundLocalError:
-        thisTarget = targetList[0]
-        pass
-
-    exampleName = 'blinky'
-    exampleSubfolders = ['binary','include','source']
-    project.makeProjectTree("{}/examples/{}".format(projectTempDir,exampleName),exampleSubfolders)
-    subprocess.call('cd {}/examples/{}; ln -s ../../libraries libraries'.format(projectTempDir,exampleName),shell=True)
-    startupFile = subprocess.getoutput('find {}/libraries/STM32CubeF* -iname startup_* | grep -iv projects | grep gcc | grep -i {}'.format(projectTempDir,thisTarget.cmsis_mcu_family))
-    blinkyExampleList = {
-        # <source file> : <destination subdirectory>
-        'resources/blinky/source/main.c' : 'source',  # Needs GPIO port (e.g. GPIOD), Needs GPOIO pin (e.g. GPIO_PIN_2)
-        'resources/blinky/include/main.h' : 'include',  # Needs HAL file (e.g. stm32f1xx_hal.h)
-        startupFile : 'source',  # Needs core type (e.g. cortex-m3), Needs FPU type (e.g. softfpv), Needs instruciton set (e.g. thumb), Needs BootRAM
-        'resources/blinky/source/stm32f1xx_it.c' : 'source',  # Needs interrupt handler .h file (e.g. stm32f1xx_it.h)
-        'resources/blinky/include/stm32f1xx_it.h' : 'include',  # Needs is own file name to prevent recursive inclusion (e.g. __STM32F1xx_IT_H)
-        'libraries/STM32CubeF1/Drivers/CMSIS/Device/ST/STM32F1xx/Source/Templates/system_stm32f1xx.c' : 'source',
-        'libraries/mbed/libraries/mbed/targets/cmsis/TARGET_STM/TARGET_STM32F1/stm32f1xx_hal_conf.h' : 'include',  # Copy this file and comment out unused libraries. There is a lot of target specific information in here.
-        thisTarget.makefile : '.',  # Needs the location of several target-specific folders
-        thisTarget.readme : '.',
-        thisTarget.linker_file : '.'  # We need the per-target RAM and FLASH information. We can easily generate this file.
-    }
-    for sourceFile in blinkyExampleList:
-        subprocess.call('cp {} {}/examples/{}/{}/'.format(sourceFile,projectTempDir,exampleName,blinkyExampleList[sourceFile]),shell=True)
-
-    # Update Makefile values
-    optionsList = {
-        'PROJECT_NAME': arguments.projectname,
-        'STM32CUBE_VERSION': thisTarget.stm32cube_version,
-        'ENDIANNESS': thisTarget.endianness,
-        'ARM_CORE': thisTarget.arm_core,
-        'INSTRUCTION_SET': thisTarget.instruction_set,
-        'CMSIS_MCU_FAMILY': thisTarget.cmsis_mcu_family,
-        'LINKER_SCRIPT': ntpath.basename(thisTarget.linker_file)
-    }
-    for option in optionsList:
-        project.writeOption("{}/examples/{}/Makefile".format(projectTempDir,exampleName),option,optionsList[option])
+        project.deployExample(projectTempDir,example,thisTarget)
+        if os.path.exists("{}/examples/{}/".format(projectTempDir,example.example_directory)):
+            print('Okay')
+        else:
+            raise Exception('    - FAIL: Directory {} does not exist.'.format(example.example_directory))
+        # Update Makefile values
+        optionsList = {
+            'PROJECT_NAME': arguments.projectname,
+            'STM32CUBE_VERSION': thisTarget.stm32cube_version,
+            'ENDIANNESS': thisTarget.endianness,
+            'ARM_CORE': thisTarget.arm_core,
+            'INSTRUCTION_SET': thisTarget.instruction_set,
+            'CMSIS_MCU_FAMILY': thisTarget.cmsis_mcu_family,
+            'LINKER_SCRIPT': ntpath.basename(thisTarget.linker_file)
+        }
+        for option in optionsList:
+            project.writeOption("{}/examples/{}/Makefile".format(projectTempDir,example.example_directory),option,optionsList[option])
 
     # Move temporary project directory to the final location
     subprocess.call('mv {} {}'.format(projectTempDir,arguments.output),shell=True)
