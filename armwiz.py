@@ -223,18 +223,6 @@ def main():
         project.printConfigList('example',configurationInformation)
         exit()
 
-    # Create temporary project directory
-    projectTempDir = '{}/{}'.format(project.makeTemporaryDirectory(),arguments.projectname)
-    print('Project temporary location: {}'.format(projectTempDir))
-    sys.stdout.flush()
-    projectSubdirectories = [
-        'source',
-        'libraries',
-        'binary',
-        'examples',
-        '.git/modules/libraries']
-    project.makeProjectTree(projectTempDir,projectSubdirectories)
-
     # Create target List
     if type(arguments.targetname) == list:
         targetList = project.makeObjectList(configurationInformation,arguments.targetname)
@@ -259,25 +247,52 @@ def main():
     else:
         raise Exception("arguments.examplename is not a list. type(arguments.examplename) is",type(arguments.examplename))
 
+    # TODO Perform a check on each arguments
+    #      - Verify each is a valid name
+    #      - Verify each option exists in the config file
+    #      - Collapes duplicates
+
+    # Create temporary project directory
+    projectTempDir = '{}/{}'.format(project.makeTemporaryDirectory(),arguments.projectname)
+    print('Project temporary location: {}'.format(projectTempDir))
+    sys.stdout.flush() # Output everything in the stdout buffer and continue
+    # TODO find where these values are hardcoded and substitute with varaibles.
+    # TODO Add this part to the config file, so people can easily make their
+    #      own format.
+    sourceDirectory = 'source'
+    includeDirectory = 'include'
+    libraryDirectory = 'libraries'
+    binaryDirectory = 'binary'
+    exampleDirectory = 'examples'
+    gitModulesDirectory = '.git/modules/libraries'
+    projectSubdirectories = [
+        sourceDirectory,
+        includeDirectory,
+        libraryDirectory,
+        binaryDirectory,
+        exampleDirectory,
+        gitModulesDirectory]
+    project.makeProjectTree(projectTempDir,projectSubdirectories)
+
     # Deploy libraries
     for library in libraryList:
-        print('Deploying {}/libraries/{}... '.format(projectTempDir,library.git_name),end="")
-        sys.stdout.flush()
+        print('Deploying {}/{}/{}... '.format(projectTempDir,libraryDirectory,library.git_name),end="")
+        sys.stdout.flush() # Output everything in the stdout buffer and continue
         project.deployLibrary(projectTempDir,library)
-        if os.path.exists("{}/libraries/{}/".format(projectTempDir,library.git_name)):
+        if os.path.exists("{}/{}/{}/".format(projectTempDir,libraryDirectory,library.git_name)):
             print('Okay')
         else:
             raise Exception('    - FAIL: Directory {} does not exist.'.format(library.git_name))
 
     # Deploy examples
     for example in exampleList:
-        print('Deploying {}/example/{}... '.format(projectTempDir,example.example_directory),end="")
-        sys.stdout.flush()
+        print('Deploying {}/{}}/{}... '.format(projectTempDir,exampleDirectory,example.example_directory),end="")
+        sys.stdout.flush() # Output everything in the stdout buffer and continue
         # TODO Determine if armwiz should generate examples for multiple targets.
         #      Generating only for first target for now.
         thisTarget = targetList[1]
         project.deployExample(projectTempDir,example,thisTarget)
-        if os.path.exists("{}/examples/{}/".format(projectTempDir,example.example_directory)):
+        if os.path.exists("{}/{}/{}/".format(projectTempDir,exampleDirectory,example.example_directory)):
             print('Okay')
         else:
             raise Exception('    - FAIL: Directory {} does not exist.'.format(example.example_directory))
@@ -292,7 +307,7 @@ def main():
             'LINKER_SCRIPT': ntpath.basename(thisTarget.linker_file)
         }
         for option in optionsList:
-            project.writeOption("{}/examples/{}/Makefile".format(projectTempDir,example.example_directory),option,optionsList[option])
+            project.writeOption("{}/{}/{}/Makefile".format(projectTempDir,exampleDirectory,example.example_directory),option,optionsList[option])
 
     # Move temporary project directory to the final location
     subprocess.call('mv {} {}'.format(projectTempDir,arguments.output),shell=True)
