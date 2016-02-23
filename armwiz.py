@@ -13,12 +13,9 @@
 # =======
 # - This code only fors for STM32F103XB.
 
-# TODO Milestone 1
+# TODO Milestone ?
 # ================
 # TODO Function: Copy linker scrip based on armwiz.config entry
-
-# TODO Milestone 2
-# ================
 # TODO Make armwiz capable of running from any directory. All tasks are done
 #      from the current directory.
 # TODO Issue: Add a proper license header
@@ -83,32 +80,6 @@ __status__ = "Development"
 ##########################
 ## Function definitions ##
 ##########################
-def printWizard():
-    """Prints the wizard and returns True."""
-    print("                             ____                   ")
-    print("                          .'* *.'                   ")
-    print("                       __/_*_*(_                    ")
-    print("                      / _______ \                   ")
-    print("                     _\_)/___\(_/_                  ")
-    print("                    / _((\- -/))_ \                 ")
-    print("                    \ \())(-)(()/ /                 ")
-    print("                     ' \(((()))/ '                  ")
-    print("                    / ' \)).))/ ' \                 ")
-    print("                   / _ \ - | - /_  \                ")
-    print("                  (   ( .;''';. .'  )               ")
-    print("                  _\\\"__ /    )\ __\"/_            ")
-    print("                    \/  \   ' /  \/                 ")
-    print("                     .'  '...' ' )                  ")
-    print("                      / /  |  \ \                   ")
-    print("                     / .   .   . \                  ")
-    print("                    /   .     .   \                 ")
-    print("                   /   /   |   \   \                ")
-    print("                 .'   /    b    '.  '.              ")
-    print("             _.-'    /     Bb     '-. '-._          ")
-    print("         _.-'       |      BBb       '-.  '-.       ")
-    print("        (__________/\____.dBBBb.________)____)      ")
-    return True
-
 def printHeader():
     """Prints the header and returns True."""
     print("")
@@ -130,6 +101,7 @@ def parseArguments():
     parser.add_argument('-p','--projectname',
         help='Specify project name via -p <projectname>',
         metavar="<projectname>",
+        default='armwizProject',
         required=False)
     parser.add_argument('-t','--targetname',
         help='Specify target microcontroller or processor via -t <targetname>',
@@ -169,10 +141,6 @@ def parseArguments():
         help='Target location -o <target location>',
         default='./',
         metavar="<target location>",
-        required=False)
-    parser.add_argument('-w','--wizard',
-        help='Print the wizard',
-        action="store_true",
         required=False)
     parser.add_argument('-n','--no_header',
         help='Print the wizard',
@@ -224,8 +192,6 @@ def main():
     arguments = parser.parse_args()
 
     # Handle all do-then-proceed arguments
-    if arguments.wizard == True:
-        printWizard()
     if arguments.no_header == False:
         printHeader()
 
@@ -236,6 +202,11 @@ def main():
         if len(configurationInformation.read(arguments.configfile)) == 0:
             raise Exception("File '{}' is empty or missing.".format(arguments.configfile))
     except:
+        # TODO Gracefully handle exceptions for
+        #      - invalid path or file name
+        #      - file does not exist
+        #      - file is invalid type
+        #      - read permission error
         raise
 
     # Handle all do-one-thing-and-exit arguments
@@ -250,10 +221,6 @@ def main():
     elif arguments.E == True:
         # Print a list of all supported targets
         project.printConfigList('example',configurationInformation)
-        exit()
-    elif arguments.projectname == None:
-        # If no project name is give, exit
-        parser.print_help()
         exit()
 
     # Create temporary project directory
