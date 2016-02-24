@@ -170,7 +170,10 @@ def printConfigList(entryType,configInfo):
 def makeObjectList(configInfo,sectionList):
     objectList = []
     for section in sectionList:
-        objectList.append(makeObjectFromConfigInfo(configInfo,section))
+        try:
+            objectList.append(makeObjectFromConfigInfo(configInfo,section))
+        except configparser.NoSectionError:
+            pass
     return objectList
 
 def makeObjectFromConfigInfo(configInfo,section):

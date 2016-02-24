@@ -124,14 +124,15 @@ def main():
         exit()
 
     targetList = project.makeObjectList(configInfo,arguments.targetname)
-    libraryList = project.makeObjectList(configInfo,arguments.libraryname)
     for target in targetList:
         for library in target.required_libraries.split(','):
-            libraryList.append(library)
-    exampleList = project.makeObjectList(configInfo,arguments.examplename)
+            arguments.libraryname.append(library)
+    libraryList = project.makeObjectList(configInfo,set(arguments.libraryname))
+    exampleList = project.makeObjectList(configInfo,set(arguments.examplename))
 
     # projectTempDir = '{}/{}'.format(project.makeTemporaryDirectory(),arguments.projectname)
-    projectTempDir = '{}/{}'.format(tempfile.TemporaryDirectory(),arguments.projectname)
+    tempDir = tempfile.TemporaryDirectory()
+    projectTempDir = '{}/{}'.format(tempDir.name,arguments.projectname)
     print('Project temporary location: {}'.format(projectTempDir))
     sys.stdout.flush() # Output everything in the stdout buffer and continue
     # TODO find where these values are hardcoded and substitute with varaibles.
@@ -173,7 +174,7 @@ def main():
         #      for each target.
         # TODO Suppress creation of DETAULT example entry. We use targetList[1]
         #      because configparser automatically creates a DEFAULT entry.
-        thisTarget = targetList[1]
+        thisTarget = targetList[0] # This line will change when we generate for multiple targets
         project.deployExample(projectTempDir,example,thisTarget)
         if os.path.exists("{}/{}/{}/".format(projectTempDir,exampleDirectory,example.example_directory)):
             print('Okay')
