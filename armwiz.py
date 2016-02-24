@@ -317,15 +317,25 @@ def main():
             'INCDIR' : includeDirectory,
             'SRCDIR' : sourceDirectory
         }
+        for option in optionsList:
+            project.writeOption("{}/{}/{}/Makefile".format(projectTempDir,exampleDirectory,example.example_directory),option,optionsList[option])
+
         definitionsList = {
             '#define EXAMPLE_GPIO_PIN' : thisTarget.example_led1,
             '#define EXAMPLE_GOIO_PIN_PORT' : thisTarget.example_led1_port,
             '#define EXAMPLE_GPIO_PIN_PORT_ENABLE' : thisTarget.example_led1_port_enable
         }
-        for option in optionsList:
-            project.writeOption("{}/{}/{}/Makefile".format(projectTempDir,exampleDirectory,example.example_directory),option,optionsList[option])
         for option in definitionsList:
             project.writeDef("{}/{}/{}/{}/main.c".format(projectTempDir,exampleDirectory,example.example_directory,sourceDirectory),option,definitionsList[option])
+
+        linkerList = {
+            'FLASH_ORIGIN' : thisTarget.flash_origin,
+            'FLASH_LENGTH' : thisTarget.flash_length,
+            'RAM_ORIGIN' : thisTarget.ram_origin,
+            'RAM_LENGTH' : thisTarget.ram_length
+        }
+        for option in linkerList:
+            project.writeLinker("{}/{}/{}/{}".format(projectTempDir,exampleDirectory,example.example_directory,ntpath.basename(thisTarget.linker_file)),option,linkerList[option])
 
     # Move temporary project directory to the final location
     # TODO make sure the target location is available. If not, append and iterate

@@ -7,6 +7,12 @@
  *                               by Pax Instruments
  */
 
+
+MEMORY {
+    FLASH (rx) : ORIGIN = FLASH_ORIGIN, LENGTH = FLASH_LENGTH
+    RAM (xrw)  : ORIGIN = RAM_ORIGIN, LENGTH = RAM_LENGTH
+}
+
 /***************/
 /*   Memory    */
 /***************/
@@ -80,6 +86,91 @@
     FLASH (rx) : ORIGIN = 0x08000000, LENGTH = 256K
     RAM (xrw)  : ORIGIN = 0x20000000, LENGTH = 64K
  }
+ #elif defined STM32F401xC
+  MEMORY {
+     FLASH (rx) : ORIGIN = 0x08000000, LENGTH = 256K
+     RAM (xrw)  : ORIGIN = 0x20000000, LENGTH = 64K
+  }
+ #elif defined STM32F401xE
+  MEMORY {
+     FLASH (rx) : ORIGIN = 0x08000000, LENGTH = 512K
+     RAM (xrw)  : ORIGIN = 0x20000000, LENGTH = 96K
+  }
+ #elif defined STM32F405xx
+  MEMORY {
+     FLASH (rx) : ORIGIN = 0x08000000, LENGTH =
+     RAM (xrw)  : ORIGIN = 0x20000000, LENGTH =
+  }
+ #elif defined STM32F407xx
+  MEMORY {
+     FLASH (rx) : ORIGIN = 0x08000000, LENGTH =
+     RAM (xrw)  : ORIGIN = 0x20000000, LENGTH =
+  }
+ #elif defined STM32F410Tx
+  MEMORY {
+     FLASH (rx) : ORIGIN = 0x08000000, LENGTH =
+     RAM (xrw)  : ORIGIN = 0x20000000, LENGTH =
+  }
+ #elif defined STM32F410Cx
+  MEMORY {
+     FLASH (rx) : ORIGIN = 0x08000000, LENGTH =
+     RAM (xrw)  : ORIGIN = 0x20000000, LENGTH =
+  }
+ #elif defined STM32F410Rx
+  MEMORY {
+     FLASH (rx) : ORIGIN = 0x08000000, LENGTH =
+     RAM (xrw)  : ORIGIN = 0x20000000, LENGTH =
+  }
+ #elif defined STM32F411xE
+  MEMORY {
+     FLASH (rx) : ORIGIN = 0x08000000, LENGTH =
+     RAM (xrw)  : ORIGIN = 0x20000000, LENGTH =
+  }
+ #elif defined STM32F415xx
+  MEMORY {
+     FLASH (rx) : ORIGIN = 0x08000000, LENGTH =
+     RAM (xrw)  : ORIGIN = 0x20000000, LENGTH =
+  }
+ #elif defined STM32F417xx
+  MEMORY {
+     FLASH (rx) : ORIGIN = 0x08000000, LENGTH =
+     RAM (xrw)  : ORIGIN = 0x20000000, LENGTH =
+  }
+ #elif defined STM32F427xx
+  MEMORY {
+     FLASH (rx) : ORIGIN = 0x08000000, LENGTH =
+     RAM (xrw)  : ORIGIN = 0x20000000, LENGTH =
+  }
+ #elif defined STM32F429xx
+  MEMORY {
+     FLASH (rx) : ORIGIN = 0x08000000, LENGTH =
+     RAM (xrw)  : ORIGIN = 0x20000000, LENGTH =
+  }
+ #elif defined STM32F437xx
+  MEMORY {
+     FLASH (rx) : ORIGIN = 0x08000000, LENGTH =
+     RAM (xrw)  : ORIGIN = 0x20000000, LENGTH =
+  }
+ #elif defined STM32F439xx
+  MEMORY {
+     FLASH (rx) : ORIGIN = 0x08000000, LENGTH =
+     RAM (xrw)  : ORIGIN = 0x20000000, LENGTH =
+  }
+ #elif defined STM32F446xx
+  MEMORY {
+     FLASH (rx) : ORIGIN = 0x08000000, LENGTH =
+     RAM (xrw)  : ORIGIN = 0x20000000, LENGTH =
+  }
+ #elif defined STM32F469xx
+  MEMORY {
+     FLASH (rx) : ORIGIN = 0x08000000, LENGTH =
+     RAM (xrw)  : ORIGIN = 0x20000000, LENGTH =
+  }
+ #elif defined STM32F479xx
+  MEMORY {
+     FLASH (rx) : ORIGIN = 0x08000000, LENGTH =
+     RAM (xrw)  : ORIGIN = 0x20000000, LENGTH =
+  }
 #else
 /* Using the smallest values */
  MEMORY {
@@ -87,6 +178,8 @@
     RAM (xrw)  : ORIGIN = 0x20000000, LENGTH = 6K
  }
  #endif
+
+
 
 ENTRY(Reset_Handler) /* Entry point of the reset handler */
 _estack = ORIGIN(RAM) + LENGTH(RAM);

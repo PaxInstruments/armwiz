@@ -179,6 +179,29 @@ def writeOption(inputFile,variable,option):
                 outputFile.write(line)
     outputFile.close()
 
+def writeLinker(inputFile,variable,option):
+    """Assign a value to a variable.
+
+    Usage:
+    writeOption(<input file>,<variable name>,<new value>)
+
+    Example:
+    writeOption('Makefile','STM32CUBE_VERSION','STM32CubeF1')
+    """
+    # TODO Make this function accept a dictionary and input file. Recursive use
+    #      of self similar to makeProjectTree()
+    # TODO Trim white space when doing search and replace
+    lines = []
+    with open(inputFile) as workingFile:
+        for line in workingFile:
+            line = line.replace(variable,option)
+            lines.append(line)
+    workingFile.close()
+    with open(inputFile,'w') as outputFile:
+            for line in lines:
+                outputFile.write(line)
+    outputFile.close()
+
 def writeDef(inputFile,variable,option):
     """Assign a value to a variable.
 
