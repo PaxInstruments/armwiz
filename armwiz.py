@@ -231,8 +231,7 @@ def main():
         else:
             raise Exception('    - FAIL: Directory {} does not exist.'.format(example.example_directory))
         # Update Makefile values
-        # TODO Make the Makefile modifications part of the deployExample function.
-        optionsDictionary = {
+        makeFileDictionary = {
             '<PROJECT_NAME>': arguments.projectname,
             '<STM32CUBE_VERSION>': thisTarget.stm32cube_version,
             '<ENDIANNESS>': thisTarget.endianness,
@@ -246,7 +245,7 @@ def main():
             '<SRCDIR>' : sourceDirectory
         }
         makeFile = "{}/{}/{}/Makefile".format(projectTempDir,exampleDirectory,example.example_directory)
-        project.replaceInFile(makeFile,optionsDictionary)
+        project.replaceInFile(makeFile,makeFileDictionary)
 
         mainCDictionary = {
             '<EXAMPLE_GPIO_PIN>' : thisTarget.example_led1,
