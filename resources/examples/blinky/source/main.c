@@ -36,6 +36,14 @@
   ******************************************************************************
   */
 
+ /* Blinky example Pins.
+ * pin: GPIO_PIN_2
+ * port: GPIOD
+ */
+#define EXAMPLE_GPIO_PIN REPLACE_THIS_VALUE
+#define EXAMPLE_GOIO_PIN_PORT REPLACE_THIS_VALUE
+#define EXAMPLE_GPIO_PIN_PORT_ENABLE REPLACE_THIS_VALUE
+
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 
@@ -63,6 +71,7 @@ void SystemClock_Config(void);
   * @param  None
   * @retval None
   */
+
 int main(void)
 {
   /* This sample code shows how to use GPIO HAL API to toggle LED2 IO
@@ -84,22 +93,22 @@ int main(void)
   SystemClock_Config();
 
   /* -1- Enable GPIO Clock (to be able to program the configuration registers) */
-  __HAL_RCC_GPIOD_CLK_ENABLE();
+  EXAMPLE_GPIO_PIN_PORT_ENABLE;
 
   /* -2- Configure IO in output push-pull mode to drive external LEDs */
   GPIO_InitStruct.Mode  = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull  = GPIO_PULLUP;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
 
-  GPIO_InitStruct.Pin = GPIO_PIN_2;
-  HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
+  GPIO_InitStruct.Pin = EXAMPLE_GPIO_PIN;
+  HAL_GPIO_Init(EXAMPLE_GOIO_PIN_PORT, &GPIO_InitStruct);
 
   /* -3- Toggle IO in an infinite loop */
   while (1)
   {
-    HAL_GPIO_TogglePin(GPIOD, GPIO_PIN_2);
+    HAL_GPIO_TogglePin(EXAMPLE_GOIO_PIN_PORT, EXAMPLE_GPIO_PIN);
     /* Insert delay 100 ms */
-    HAL_Delay(100);
+    HAL_Delay(500);
   }
 }
 

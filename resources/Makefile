@@ -22,13 +22,13 @@
 # Project Name
 # ------------
 # This is the name of your project.
-PROJECT_NAME=
+PROJECT_NAME=REPLACE_THIS_VALUE
 
 ## STM32CubeX library
 # -------------------
 # This is the option that defines which ST Microsystems library to use for your
 # target device.
-STM32CUBE_VERSION=
+STM32CUBE_VERSION=REPLACE_THIS_VALUE
 # Option        Description
 # ------        -----------
 #             - An empty right-hand side leaves this value undefined
@@ -45,7 +45,7 @@ STM32CUBE_VERSION=
 # the least significant byte (LSB) is in the highest memory address. Little-endian uses
 # the revserse order, storing the LSB in the lowest memory address and MSB in the
 # highest memory address. This can be found in the chip's datasheet.
-ENDIANNESS=
+ENDIANNESS=REPLACE_THIS_VALUE
 # Option          Description
 # ------          -----------
 #               - An empty right-hand side leaves this value undefined
@@ -56,7 +56,7 @@ ENDIANNESS=
 # ---------
 # This is simply the core used in the target device.
 # TODO Add option descriptions.
-ARM_CORE=
+ARM_CORE=REPLACE_THIS_VALUE
 # Option       Description
 # ------       -----------
 #               - An empty right-hand side leaves this value undefined
@@ -70,7 +70,7 @@ ARM_CORE=
 # ------------------
 # I think this is the insturction set used.
 # TODO Learn and explain here
-INSTRUCTION_SET=
+INSTRUCTION_SET=REPLACE_THIS_VALUE
 # Option   Description
 # ------   -----------
 #        - An empty right-hand side leaves this value undefined
@@ -82,14 +82,13 @@ INSTRUCTION_SET=
 # This is the script that tells the linker where all the bits go.
 # TODO Make an armwiz linker script. Use ifdef statements to select the flash
 # and RAM parameters.
-LINKER_SCRIPT=
+LINKER_SCRIPT=REPLACE_THIS_VALUE
 
 # CMSIS MCU
 # ---------
 # This is the definition needed by the CMSIS libraries to set several parameters.
-# TODO Add a list of which chips go with which flags.
-# TODO Display path to file in whic this is needed.
-CMSIS_MCU_FAMILY=
+# TODO Display path to file in which this is needed.
+CMSIS_MCU_FAMILY=REPLACE_THIS_VALUE
 # Option        Description
 # ------        -----------
 # STM32F100xB - STM32F100C4, STM32F100R4, STM32F100C6, STM32F100R6, STM32F100C8,
@@ -153,9 +152,9 @@ A2L=${TOOLCHAIN_DIRECTORY}arm-none-eabi-addr2line
 
 ###
 # Directory Structure
-BINDIR=binary
-INCDIR=include
-SRCDIR=source
+BINDIR=REPLACE_THIS_VALUE
+INCDIR=REPLACE_THIS_VALUE
+SRCDIR=REPLACE_THIS_VALUE
 
 ###
 # Find project source files
@@ -206,7 +205,7 @@ CFLAGS=-c $(MCFLAGS) $(DEFS) $(INCLUDES)
 CXXFLAGS=-c $(MCFLAGS) $(DEFS) $(INCLUDES) -std=c++11
 CPPFLAGS=-D${CMSIS_MCU_FAMILY}
 # LINKER FLAGS
-LDSCRIPT=output.ld
+LDSCRIPT=REPLACE_THIS_VALUE
 LDFLAGS =-T $(LDSCRIPT) $(MCFLAGS) --specs=nosys.specs $(INCLUDES_LIBS) $(LINK_LIBS)
 
 ###
@@ -275,7 +274,9 @@ ${LDSCRIPT}: ${LINKER_SCRIPT}
 	${CPP} ${DEFS} $< | grep -v '^#' > $@
 
 clean:
-	rm -f $(OBJECTS) $(BINDIR)/$(BINELF) $(BINDIR)/$(BINHEX) $(BINDIR)/$(BINBIN) $(BINDIR)/output.map output.ld
+	rm -f ${SRCDIR}/*.o ${INCDIR}/*.o $(BINDIR)/$(BINELF) $(BINDIR)/$(BINHEX) $(BINDIR)/$(BINBIN) $(BINDIR)/output.map ${LDSCRIPT}
+cleanall:
+	rm -f $(OBJECTS) $(BINDIR)/$(BINELF) $(BINDIR)/$(BINHEX) $(BINDIR)/$(BINBIN) $(BINDIR)/output.map ${LDSCRIPT}
 flash: $(BINDIR)/$(BINBIN)
 		st-flash write $(BINDIR)/$(BINBIN) 0x8000000
 deploy:

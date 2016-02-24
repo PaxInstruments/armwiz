@@ -26,6 +26,8 @@
 #      for free if armwiz first checks if a target library already exists.
 # TODO Use the tempfile module to make a temporary directory. This will be more
 #      cross-platform. See http://stackoverflow.com/questions/847850/cross-platform-way-of-getting-temp-directory-in-python
+# TODO Create a variable to track the failure state of creating a project. only
+#      mv the final project to destination of hasFailed==False
 
 # Icebox
 # ======
@@ -286,10 +288,14 @@ def main():
 
     # Deploy examples
     for example in exampleList:
-        print('Deploying {}/{}}/{}... '.format(projectTempDir,exampleDirectory,example.example_directory),end="")
+        print('Deploying {}/{}/{}... '.format(projectTempDir,exampleDirectory,example.example_directory),end="")
         sys.stdout.flush() # Output everything in the stdout buffer and continue
         # TODO Determine if armwiz should generate examples for multiple targets.
         #      Generating only for first target for now.
+        # TODO If more than one target is listed, make examples/<target>/<example>
+        #      for each target.
+        # TODO Suppress creation of DETAULT example entry. We use targetList[1]
+        #      because configparser automatically creates a DEFAULT entry.
         thisTarget = targetList[1]
         project.deployExample(projectTempDir,example,thisTarget)
         if os.path.exists("{}/{}/{}/".format(projectTempDir,exampleDirectory,example.example_directory)):
@@ -297,20 +303,39 @@ def main():
         else:
             raise Exception('    - FAIL: Directory {} does not exist.'.format(example.example_directory))
         # Update Makefile values
+        # TODO Make the Makefile modifications part of the deployExample function.
         optionsList = {
             'PROJECT_NAME': arguments.projectname,
             'STM32CUBE_VERSION': thisTarget.stm32cube_version,
             'ENDIANNESS': thisTarget.endianness,
             'ARM_CORE': thisTarget.arm_core,
             'INSTRUCTION_SET': thisTarget.instruction_set,
+            'LINKER_SCRIPT': ntpath.basename(thisTarget.linker_file),
             'CMSIS_MCU_FAMILY': thisTarget.cmsis_mcu_family,
-            'LINKER_SCRIPT': ntpath.basename(thisTarget.linker_file)
+            'LDSCRIPT' : '{}.ld'.format(thisTarget.cmsis_mcu_family),
+            'BINDIR' : binaryDirectory,
+            'INCDIR' : includeDirectory,
+            'SRCDIR' : sourceDirectory
+        }
+        definitionsList = {
+            '#define EXAMPLE_GPIO_PIN' : thisTarget.example_led1,
+            '#define EXAMPLE_GOIO_PIN_PORT' : thisTarget.example_led1_port,
+            '#define EXAMPLE_GPIO_PIN_PORT_ENABLE' : thisTarget.example_led1_port_enable
         }
         for option in optionsList:
             project.writeOption("{}/{}/{}/Makefile".format(projectTempDir,exampleDirectory,example.example_directory),option,optionsList[option])
+        for option in definitionsList:
+            project.writeDef("{}/{}/{}/{}/main.c".format(projectTempDir,exampleDirectory,example.example_directory,sourceDirectory),option,definitionsList[option])
 
     # Move temporary project directory to the final location
-    subprocess.call('mv {} {}'.format(projectTempDir,arguments.output),shell=True)
+    # TODO make sure the target location is available. If not, append and iterate
+    #      a numerical suffix.
+    # TODO Use os.rename or sutil.move to move the project directory from the
+    #      temp directory to the destination.
+    try:
+        subprocess.check_output('mv {} {}'.format(projectTempDir,arguments.output),shell=True)
+    except:
+        print('The target directory exists.')
 
     # TODO Write readme.md files to the temporary project directory tree folders
 

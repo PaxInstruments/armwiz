@@ -165,12 +165,39 @@ def writeOption(inputFile,variable,option):
     # TODO Make this function accept a dictionary and input file. Recursive use
     #      of self similar to makeProjectTree()
     # TODO Trim white space when doing search and replace
+    variable = variable.strip().split('=')[0].split(' ')[0]
     lines = []
     with open(inputFile) as workingFile:
         for line in workingFile:
             index=line.find(variable)
             if index == 0:
                 line = line.replace(line, "{}={}\n".format(variable,option))
+            lines.append(line)
+    workingFile.close()
+    with open(inputFile,'w') as outputFile:
+            for line in lines:
+                outputFile.write(line)
+    outputFile.close()
+
+def writeDef(inputFile,variable,option):
+    """Assign a value to a variable.
+
+    Usage:
+    writeOption(<input file>,<variable name>,<new value>)
+
+    Example:
+    writeOption('Makefile','STM32CUBE_VERSION','STM32CubeF1')
+    """
+    # TODO Make this function accept a dictionary and input file. Recursive use
+    #      of self similar to makeProjectTree()
+    # TODO Trim white space when doing search and replace
+    variable = '{} '.format(variable.strip().split('REPLACE_THIS_VALUE')[0])
+    lines = []
+    with open(inputFile) as workingFile:
+        for line in workingFile:
+            index=line.find(variable)
+            if index == 0:
+                line = line.replace(line, "{} {}\n".format(variable.strip().split('REPLACE_THIS_VALUE')[0],option))
             lines.append(line)
     workingFile.close()
     with open(inputFile,'w') as outputFile:
