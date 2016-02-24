@@ -9,25 +9,16 @@
 # ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝     ╚═╝ ╚══╝╚══╝ ╚═╝╚══════╝
 #                               by Pax Instruments
 
-# Notes
-# =======
-# - This code only fors for STM32F103XB.
-
-# TODO Milestone ?
-# ================
-# TODO Function: Copy linker scrip based on armwiz.config entry
+# TODO Now
+# ==============
 # TODO Make armwiz capable of running from any directory. All tasks are done
 #      from the current directory.
-# TODO Issue: Add a proper license header
-# TODO Issue: Ensure git knows about empty directories in the project tree by putting
+# TODO Add a proper license header
+# TODO Ensure git knows about empty directories in the project tree by putting
 #      readmefiles in there or .git files if that makes sense.
-# TODO Function: Generate README based on libraries copied.
+# TODO Generate README based on libraries copied.
 # TODO Ignore duplicated library (target, etc.) options while parsing arguments. This could happen
 #      for free if armwiz first checks if a target library already exists.
-# TODO Use the tempfile module to make a temporary directory. This will be more
-#      cross-platform. See http://stackoverflow.com/questions/847850/cross-platform-way-of-getting-temp-directory-in-python
-# TODO Create a variable to track the failure state of creating a project. only
-#      mv the final project to destination of hasFailed==False
 
 # Icebox
 # ======
@@ -67,6 +58,7 @@ import ntpath
 import project
 import tkinter
 import armwizArgParser
+import tempfile
 
 ## Standard Python header information
 __author__ = "Charles Edward Pax"
@@ -95,14 +87,6 @@ def printHeader():
         .format(__version__))
     return True
 
-# def is_valid_file(parser, arg):
-#     # TODO Add appropriate docstring
-#     # TODO Understand this function. Maybe use the return open handler somewhere else.
-#     if not os.path.exists(arg):
-#         parser.error("The file {} does not exist!".format(arg))
-#     else:
-#         return open(arg, 'r')  # return an open file handle
-
 def main():
     """
     armwiz project template generator for ARM processors and development
@@ -121,74 +105,39 @@ def main():
     parser = armwizArgParser.parseArguments()
     arguments = parser.parse_args()
 
-    # Handle all do-then-proceed arguments
+    configInfo = configparser.ConfigParser()
+    configInfo.read(arguments.configfile)
+
     if arguments.no_header == False:
         printHeader()
-
-    # Read configuration information
-    configurationInformation = configparser.ConfigParser()
-    try:
-        configurationInformation.read(arguments.configfile)
-        if len(configurationInformation.read(arguments.configfile)) == 0:
-            raise Exception("File '{}' is empty or missing.".format(arguments.configfile))
-    except:
-        # TODO Gracefully handle exceptions for
-        #      - invalid path or file name
-        #      - file does not exist
-        #      - file is invalid type
-        #      - read permission error
-        raise
-
-    # Handle all do-one-thing-and-exit arguments
     if arguments.L == True:
         # Print a list of all supported libraries
-        project.printConfigList('library',configurationInformation)
+        project.printConfigList('library',configInfo)
         exit()
     elif arguments.T == True:
         # Print a list of all supported targets
-        project.printConfigList('target',configurationInformation)
+        project.printConfigList('target',configInfo)
         exit()
     elif arguments.E == True:
         # Print a list of all supported targets
-        project.printConfigList('example',configurationInformation)
+        project.printConfigList('example',configInfo)
         exit()
 
-    # Create target List
-    if type(arguments.targetname) == list:
-        targetList = project.makeObjectList(configurationInformation,arguments.targetname)
-    elif type(arguments.targetname) == type(None):
-        pass
-    else:
-        raise Exception("arguments.targetname is not a list. type(arguments.targetname) is",type(arguments.targetname))
+    targetList = project.makeObjectList(configInfo,arguments.targetname)
+    libraryList = project.makeObjectList(configInfo,arguments.libraryname)
+    for target in targetList:
+        for library in target.required_libraries.split(','):
+            libraryList.append(library)
+    exampleList = project.makeObjectList(configInfo,arguments.examplename)
 
-    # Create library List
-    if type(arguments.libraryname) == list:
-        libraryList = project.makeObjectList(configurationInformation,arguments.libraryname)
-    elif type(arguments.libraryname) == type(None):
-        pass
-    else:
-        raise Exception("arguments.libraryname is not a list. type(arguments.libraryname) is",type(arguments.libraryname))
-
-    # Create example List
-    if type(arguments.examplename) == list:
-        exampleList = project.makeObjectList(configurationInformation,arguments.examplename)
-    elif type(arguments.examplename) == type(None):
-        pass
-    else:
-        raise Exception("arguments.examplename is not a list. type(arguments.examplename) is",type(arguments.examplename))
-
-    # TODO Perform a check on each arguments
-    #      - Verify each is a valid name
-    #      - Verify each option exists in the config file
-    #      - Collapes duplicates
-
-    # Create temporary project directory
-    projectTempDir = '{}/{}'.format(project.makeTemporaryDirectory(),arguments.projectname)
+    # projectTempDir = '{}/{}'.format(project.makeTemporaryDirectory(),arguments.projectname)
+    projectTempDir = '{}/{}'.format(tempfile.TemporaryDirectory(),arguments.projectname)
     print('Project temporary location: {}'.format(projectTempDir))
     sys.stdout.flush() # Output everything in the stdout buffer and continue
     # TODO find where these values are hardcoded and substitute with varaibles.
     # TODO Add this part to the config file, so people can easily make their
     #      own format.
+
     sourceDirectory = 'source'
     includeDirectory = 'include'
     libraryDirectory = 'libraries'

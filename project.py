@@ -56,24 +56,6 @@ def makePath(pathList):
     else:
         raise Exception("Value for each path must be a string or a list of strings. {} is not a string.".format(path))
 
-def makeTemporaryDirectory():
-    """Creates /tmp/armwiz/<number> and returns path.
-
-    The <number> is iterated and will be the lowest available positive integer.
-
-    Usage:
-    myTempDir = makeTemporaryDirectory()
-    """
-    iteratedDir = 0
-    while os.path.exists('/tmp/armwiz/{}'.format(iteratedDir)):
-        iteratedDir += 1
-    path = '/tmp/armwiz/{}'.format(iteratedDir)
-    makePath(path)
-    if os.path.exists(path):
-        return path
-    else:
-        raise Exception('Could not make the path.')
-
 def makeProjectTree(root,paths):
     """ Create a directory tree inside of root directory and return True.
     Usage:
