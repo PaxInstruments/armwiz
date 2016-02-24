@@ -10,6 +10,24 @@ import configparser
 class ConfigObject:
     """Empty object"""
 
+def replaceInFile(inputFile,valueDictionary):
+    with open(inputFile) as workingFile:
+        newText = replace(workingFile,valueDictionary)
+        workingFile.close()
+    with open(inputFile,'w') as outputFile:
+        for line in newText:
+            outputFile.write(line)
+        outputFile.close()
+
+def replace(workingFile,valueDictionary):
+    """Replace entries in text using dictionary and return text."""
+    lines = []
+    for line in workingFile:
+        for tag in valueDictionary:
+            line = line.replace(tag,valueDictionary[tag])
+        lines.append(line)
+    return lines
+
 def makePath(pathList):
     """Create a directory path from a string or list of strings and return
     the same path or list.

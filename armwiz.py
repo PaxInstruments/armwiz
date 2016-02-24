@@ -61,12 +61,12 @@ import subprocess
 import os
 import sys
 import errno
-import argparse
 import configparser
 import fileinput
 import ntpath
 import project
 import tkinter
+import armwizArgParser
 
 ## Standard Python header information
 __author__ = "Charles Edward Pax"
@@ -95,78 +95,6 @@ def printHeader():
         .format(__version__))
     return True
 
-def parseArguments():
-    """Parses command line arguments and returns ArgumentParser object."""
-    parser = argparse.ArgumentParser(
-        description='Generate a template embedded ARM project.',
-        epilog="armwiz {}".format(__date__))
-    parser.add_argument('-p','--projectname',
-        help='Specify project name via -p <projectname>',
-        metavar="<projectname>",
-        default='armwizProject',
-        required=False)
-    parser.add_argument('-t','--targetname',
-        help='Specify target microcontroller or processor via -t <targetname>',
-        metavar="<targetname>",
-        default=['no-target'],
-        action="append",
-        required=False)
-    parser.add_argument('-e','--examplename',
-        help='Specify which examples to copy via -e <examplename>',
-        metavar="<examplename>",
-        default=['blinky'],
-        action="append",
-        required=False)
-    parser.add_argument('-l','--libraryname',
-        help='Specify a library to include via -l <libraryname>',
-        metavar="<libraryname>",
-        action="append",
-        required=False)
-    parser.add_argument('-L',
-        help='List all libraries available to -l <libraryname> and exit.',
-        action="store_true",
-        required=False)
-    parser.add_argument('-T',
-        help='List all targets available to -t <targetname> and exit',
-        action="store_true",
-        required=False)
-    parser.add_argument('-E',
-        help='List all examples available to -e <examplename> and exit',
-        action="store_true",
-        required=False)
-    parser.add_argument('-c','--configfile',
-        help='Specify a configuration file via -t <config file name>',
-        default='armwiz.config',
-        metavar="<config file name>",
-        required=False)
-    parser.add_argument('-o','--output',
-        help='Target location -o <target location>',
-        default='./',
-        metavar="<target location>",
-        required=False)
-    parser.add_argument('-n','--no_header',
-        help='Print the wizard',
-        default=False,
-        action="store_true",
-        required=False)
-    parser.add_argument('-g','--git',
-        help='Initialize project as a git repository. Default is True. Ignored if git is not present.',
-        default=True,
-        action="store_true",
-        required=False)
-    parser.add_argument('-v','--verbose',
-        help='Print extra information to the terminal',
-        action="store_true",
-        required=False)
-    parser.add_argument('-q','--quite',
-        help='Suppress terminal message as best we can',
-        action="store_true",
-        required=False)
-    parser.add_argument('--version',
-        version='%(prog)s {version}'.format(version=__version__),
-        action='version')
-    return parser
-
 # def is_valid_file(parser, arg):
 #     # TODO Add appropriate docstring
 #     # TODO Understand this function. Maybe use the return open handler somewhere else.
@@ -190,7 +118,7 @@ def main():
     """
 
     # Parse all command line arguments
-    parser = parseArguments()
+    parser = armwizArgParser.parseArguments()
     arguments = parser.parse_args()
 
     # Handle all do-then-proceed arguments
@@ -304,38 +232,38 @@ def main():
             raise Exception('    - FAIL: Directory {} does not exist.'.format(example.example_directory))
         # Update Makefile values
         # TODO Make the Makefile modifications part of the deployExample function.
-        optionsList = {
-            'PROJECT_NAME': arguments.projectname,
-            'STM32CUBE_VERSION': thisTarget.stm32cube_version,
-            'ENDIANNESS': thisTarget.endianness,
-            'ARM_CORE': thisTarget.arm_core,
-            'INSTRUCTION_SET': thisTarget.instruction_set,
-            'LINKER_SCRIPT': ntpath.basename(thisTarget.linker_file),
-            'CMSIS_MCU_FAMILY': thisTarget.cmsis_mcu_family,
-            'LDSCRIPT' : '{}.ld'.format(thisTarget.cmsis_mcu_family),
-            'BINDIR' : binaryDirectory,
-            'INCDIR' : includeDirectory,
-            'SRCDIR' : sourceDirectory
+        optionsDictionary = {
+            '<PROJECT_NAME>': arguments.projectname,
+            '<STM32CUBE_VERSION>': thisTarget.stm32cube_version,
+            '<ENDIANNESS>': thisTarget.endianness,
+            '<ARM_CORE>': thisTarget.arm_core,
+            '<INSTRUCTION_SET>': thisTarget.instruction_set,
+            '<LINKER_SCRIPT>': ntpath.basename(thisTarget.linker_file),
+            '<CMSIS_MCU_FAMILY>': thisTarget.cmsis_mcu_family,
+            '<LDSCRIPT>' : '{}.ld'.format(thisTarget.cmsis_mcu_family),
+            '<BINDIR>' : binaryDirectory,
+            '<INCDIR>' : includeDirectory,
+            '<SRCDIR>' : sourceDirectory
         }
-        for option in optionsList:
-            project.writeOption("{}/{}/{}/Makefile".format(projectTempDir,exampleDirectory,example.example_directory),option,optionsList[option])
+        makeFile = "{}/{}/{}/Makefile".format(projectTempDir,exampleDirectory,example.example_directory)
+        project.replaceInFile(makeFile,optionsDictionary)
 
-        definitionsList = {
-            '#define EXAMPLE_GPIO_PIN' : thisTarget.example_led1,
-            '#define EXAMPLE_GOIO_PIN_PORT' : thisTarget.example_led1_port,
-            '#define EXAMPLE_GPIO_PIN_PORT_ENABLE' : thisTarget.example_led1_port_enable
+        mainCDictionary = {
+            '<EXAMPLE_GPIO_PIN>' : thisTarget.example_led1,
+            '<EXAMPLE_GOIO_PIN_PORT>' : thisTarget.example_led1_port,
+            '<EXAMPLE_GPIO_PIN_PORT_ENABLE>' : thisTarget.example_led1_port_enable
         }
-        for option in definitionsList:
-            project.writeDef("{}/{}/{}/{}/main.c".format(projectTempDir,exampleDirectory,example.example_directory,sourceDirectory),option,definitionsList[option])
+        mainCFile = "{}/{}/{}/{}/main.c".format(projectTempDir,exampleDirectory,example.example_directory,sourceDirectory)
+        project.replaceInFile(mainCFile,mainCDictionary)
 
-        linkerList = {
-            'FLASH_ORIGIN' : thisTarget.flash_origin,
-            'FLASH_LENGTH' : thisTarget.flash_length,
-            'RAM_ORIGIN' : thisTarget.ram_origin,
-            'RAM_LENGTH' : thisTarget.ram_length
+        linkerDictionary = {
+            '<FLASH_ORIGIN>' : thisTarget.flash_origin,
+            '<FLASH_LENGTH>' : thisTarget.flash_length,
+            '<RAM_ORIGIN>' : thisTarget.ram_origin,
+            '<RAM_LENGTH>' : thisTarget.ram_length
         }
-        for option in linkerList:
-            project.writeLinker("{}/{}/{}/{}".format(projectTempDir,exampleDirectory,example.example_directory,ntpath.basename(thisTarget.linker_file)),option,linkerList[option])
+        linkerFile = "{}/{}/{}/{}".format(projectTempDir,exampleDirectory,example.example_directory,ntpath.basename(thisTarget.linker_file))
+        project.replaceInFile(linkerFile,linkerDictionary)
 
     # Move temporary project directory to the final location
     # TODO make sure the target location is available. If not, append and iterate

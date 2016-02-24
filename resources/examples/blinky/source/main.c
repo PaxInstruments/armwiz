@@ -40,9 +40,9 @@
  * pin: GPIO_PIN_2
  * port: GPIOD
  */
-#define EXAMPLE_GPIO_PIN REPLACE_THIS_VALUE
-#define EXAMPLE_GOIO_PIN_PORT REPLACE_THIS_VALUE
-#define EXAMPLE_GPIO_PIN_PORT_ENABLE REPLACE_THIS_VALUE
+#define EXAMPLE_GPIO_PIN <EXAMPLE_GPIO_PIN>
+#define EXAMPLE_GOIO_PIN_PORT <EXAMPLE_GOIO_PIN_PORT>
+#define EXAMPLE_GPIO_PIN_PORT_ENABLE <EXAMPLE_GPIO_PIN_PORT_ENABLE>
 
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
