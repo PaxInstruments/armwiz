@@ -9,7 +9,7 @@
 # ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝     ╚═╝ ╚══╝╚══╝ ╚═╝╚══════╝
 #                               by Pax Instruments
 
-# TODO Now
+# TODO List
 # ==============
 # TODO Make armwiz capable of running from any directory. All tasks are done
 #      from the current directory.
@@ -59,6 +59,7 @@ import project
 import tkinter
 import armwizArgParser
 import tempfile
+import shutil
 
 ## Standard Python header information
 __author__ = "Charles Edward Pax"
@@ -217,12 +218,17 @@ def main():
     # Move temporary project directory to the final location
     # TODO make sure the target location is available. If not, append and iterate
     #      a numerical suffix.
-    # TODO Use os.rename or sutil.move to move the project directory from the
+    # TODO Use os.rename or shutil.move to move the project directory from the
     #      temp directory to the destination.
+    print('Moving project to {}/{}... '.format(arguments.output,arguments.projectname),end='')
     try:
-        subprocess.check_output('mv {} {}'.format(projectTempDir,arguments.output),shell=True)
+        shutil.move(projectTempDir,'{}/{}'.format(arguments.output,arguments.projectname))
+        # os.rename(projectTempDir,'{}/'.format(arguments.output))
+        print('Okay')
     except:
-        print('The target directory exists.')
+        print('ERROR')
+        print('The target directory {}/{} exists.'.format(arguments.output,arguments.projectname))
+        raise
 
     # TODO Write readme.md files to the temporary project directory tree folders
 

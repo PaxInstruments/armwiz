@@ -3,6 +3,8 @@
 import os
 import subprocess
 import configparser
+import glob
+import ntpath
 
 #######################
 ## Class definitions ##
@@ -93,31 +95,48 @@ def makeProjectTree(root,paths):
                 raise
     return True
 
+def getStartupFile(root,family):
+    sourceFile = subprocess.getoutput('find {}/libraries/STM32CubeF* -iname startup_* | grep -iv projects | grep gcc | grep -i {}'.format(root,family))
+    return sourceFile
+
+def getSystemCFile(root,family):
+    series = family[:7]
+    command = 'find {}/libraries/STM32CubeF* -iname system_{}*.c | grep -iv projects'.format(root,series)
+    # command = 'find {}/libraries/STM32CubeF* -iname system_* | grep -iv projects | grep -i {}'.format(root,family[:6])
+    sourceFile = subprocess.getoutput(command)
+    return sourceFile
+
+def getHALFile(root,family):
+    series = family[:7]
+    command = 'find {}/libraries/STM32CubeF* -iname stm32f*_hal_conf_template.h | grep -iv projects'.format(root,series)
+    # command = 'find {}/libraries/STM32CubeF* -iname system_* | grep -iv projects | grep -i {}'.format(root,family[:6])
+    sourceFile = subprocess.getoutput(command)
+    return sourceFile
+
 def deployExample(targetProjectRootPath,example,target):
     """Deploy example to project Directory"""
-    if not os.path.exists(targetProjectRootPath):
-        raise Exception("The target path {} does not exist.".format(targetProjectRootPath))
-    try:
-        subprocess.call('rsync -ac resources/examples/{} {}/examples/'.format(example.example_directory,targetProjectRootPath,example.example_directory),shell=True)
-    except:
-        raise Exception('ERROR using rsync to copy {}'.format(example.proper_name))
+    subprocess.call('rsync -ac resources/examples/{} {}/examples/'.format(example.example_directory,targetProjectRootPath,example.example_directory),shell=True)
     subprocess.call('cd {}/examples/{}; ln -s ../../libraries libraries'.format(targetProjectRootPath,example.example_directory),shell=True)
     # TODO Make this work for more than just STM32 chips
-    startupFile = subprocess.getoutput('find {}/libraries/STM32CubeF* -iname startup_* | grep -iv projects | grep gcc | grep -i {}'.format(targetProjectRootPath,target.cmsis_mcu_family))
+    startupFile = getStartupFile(targetProjectRootPath,target.cmsis_mcu_family)
     # TODO The following two files should be found and not hard-coded.
-    HALConfFile = 'libraries/mbed/libraries/mbed/targets/cmsis/TARGET_STM/TARGET_STM32F1/stm32f1xx_hal_conf.h'
-    interruptFile = 'libraries/STM32CubeF1/Drivers/CMSIS/Device/ST/STM32F1xx/Source/Templates/system_stm32f1xx.c'
+    # HALConfFile = 'libraries/mbed/libraries/mbed/targets/cmsis/TARGET_STM/TARGET_STM32F1/stm32f1xx_hal_conf.h'
+    HALConfFile = getHALFile(targetProjectRootPath,target.cmsis_mcu_family)
+    newHAL = ntpath.basename(HALConfFile)[:18]
+    print('newHAL:',newHAL)
+    # interruptFile = 'libraries/STM32CubeF1/Drivers/CMSIS/Device/ST/STM32F1xx/Source/Templates/system_stm32f1xx.c'
+    interruptFile = getSystemCFile(targetProjectRootPath,target.cmsis_mcu_family)
     exampleFileList = {
         # <source file> : <destination subdirectory>
-        startupFile : 'source',  # Needs core type (e.g. cortex-m3), Needs FPU type (e.g. softfpv), Needs instruciton set (e.g. thumb), Needs BootRAM
-        interruptFile : 'source',
-        HALConfFile : 'include',  # Copy this file and comment out unused libraries. There is a lot of target specific information in here.
+        startupFile : 'source/',  # Needs core type (e.g. cortex-m3), Needs FPU type (e.g. softfpv), Needs instruciton set (e.g. thumb), Needs BootRAM
+        interruptFile : 'source/',
+        HALConfFile : 'include/{}.h'.format(newHAL),  # Copy this file and comment out unused libraries. There is a lot of target specific information in here.
         target.makefile : '.',  # Needs the location of several target-specific folders
         target.readme : '.',
         target.linker_file : '.'  # We need the per-target RAM and FLASH information. We can easily generate this file.
     }
     for sourceFile in exampleFileList:
-        subprocess.call('cp {} {}/examples/{}/{}/'.format(sourceFile,targetProjectRootPath,example.example_directory,exampleFileList[sourceFile]),shell=True)
+        subprocess.call('cp {} {}/examples/{}/{}'.format(sourceFile,targetProjectRootPath,example.example_directory,exampleFileList[sourceFile]),shell=True)
     try:
         subprocess.call('cd {}; git add examples/{}'.format(targetProjectRootPath,example.example_directory),shell=True)
         subprocess.call("cd {}; git commit -qam 'armwiz added {}'".format(targetProjectRootPath,example.proper_name),shell=True)
