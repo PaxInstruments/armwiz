@@ -1,0 +1,77 @@
+
+
+Port Pin Function
+---- --- --------
+  A   00
+  A   01
+  A   02 USART2_TX
+  A   03 USART2_RX
+  A   04
+  A   05 ETH_ENC_SCK
+  A   06 ETH_ENC_MISO
+  A   07 ETH_ENC_MOSI
+  A   08
+  A   09 USART1_TX
+  A   10 USART1_RX
+  A   11 USB_D-
+  A   12 USB_D+
+  A   13 JTAG-TMS
+  A   14 JTAG-TCK
+  A   15 JTAG-TDI
+
+Port Pin Function
+---- --- --------
+  B   00 ETH_NET_INT
+  B   01
+  B   02 BOOT1
+  B   03 JTAG-TDO
+  B   04 JTAG-TRST
+  B   05
+  B   06
+  B   07
+  B   08
+  B   09
+  B   10
+  B   11
+  B   12
+  B   13
+  B   14
+  B   15
+
+Port Pin Function
+---- --- --------
+  C   00
+  C   01
+  C   02
+  C   03
+  C   04 ETH_NET_CS
+  C   05 ETH_WOL
+  C   06
+  C   07
+  C   08 SDIO_D0
+  C   09 SDIO_D1
+  C   10 SDIO_D2
+  C   11 SDIO_D3
+  C   12 SDIO_CLK
+  C   13
+  C   14
+  C   15
+
+Port Pin Function
+---- --- --------
+  D   00
+  D   01
+  D   02 SDIO_CMD
+  D   03
+  D   04
+  D   05
+  D   06
+  D   07
+  D   08
+  D   09
+  D   10
+  D   11
+  D   12
+  D   13
+  D   14
+  D   15

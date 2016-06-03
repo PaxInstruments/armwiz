@@ -190,7 +190,6 @@ def main():
             '<INSTRUCTION_SET>': thisTarget.instruction_set,
             '<LINKER_SCRIPT>': ntpath.basename(thisTarget.linker_file),
             '<CMSIS_MCU_FAMILY>': thisTarget.cmsis_mcu_family,
-            '<LDSCRIPT>' : '{}.ld'.format(thisTarget.cmsis_mcu_family),
             '<BINDIR>' : binaryDirectory,
             '<INCDIR>' : includeDirectory,
             '<SRCDIR>' : sourceDirectory

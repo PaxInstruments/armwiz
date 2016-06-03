@@ -1,0 +1,11 @@
+# This is a test file
+# STM32CUBE_VERSION=STM32CubeF1
+STM32CUBE_VERSION=STM32CubeF1
+# TODO Learn and explain here
+INSTRUCTION_SET=thumb
+#
+INSTRUCTION_SET=thumb
+nd in the chip's datasheet.
+# ENDIANNESS=hello world
+ENDIANNESS=big mama
+# Option          Description

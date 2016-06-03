@@ -12,6 +12,10 @@ import ntpath
 class ConfigObject:
     """Empty object"""
 
+# class testObject:
+#     __init__(self):
+#         self.name = "myName"
+
 def replaceInFile(inputFile,valueDictionary):
     with open(inputFile) as workingFile:
         newText = replace(workingFile,valueDictionary)
@@ -123,13 +127,16 @@ def deployExample(targetProjectRootPath,example,target):
     # HALConfFile = 'libraries/mbed/libraries/mbed/targets/cmsis/TARGET_STM/TARGET_STM32F1/stm32f1xx_hal_conf.h'
     HALConfFile = getHALFile(targetProjectRootPath,target.cmsis_mcu_family)
     newHAL = ntpath.basename(HALConfFile)[:18]
-    print('newHAL:',newHAL)
+    interruptHeader = 'resources/stm32fxxx_it.h'
+    interruptC = 'resources/stm32fxxx_it.c'
     # interruptFile = 'libraries/STM32CubeF1/Drivers/CMSIS/Device/ST/STM32F1xx/Source/Templates/system_stm32f1xx.c'
-    interruptFile = getSystemCFile(targetProjectRootPath,target.cmsis_mcu_family)
+    systemFile = getSystemCFile(targetProjectRootPath,target.cmsis_mcu_family)
     exampleFileList = {
         # <source file> : <destination subdirectory>
         startupFile : 'source/',  # Needs core type (e.g. cortex-m3), Needs FPU type (e.g. softfpv), Needs instruciton set (e.g. thumb), Needs BootRAM
-        interruptFile : 'source/',
+        systemFile : 'source/',
+        interruptHeader : 'include/',  # Needs core type (e.g. cortex-m3), Needs FPU type (e.g. softfpv), Needs instruciton set (e.g. thumb), Needs BootRAM
+        interruptC : 'source/',
         HALConfFile : 'include/{}.h'.format(newHAL),  # Copy this file and comment out unused libraries. There is a lot of target specific information in here.
         target.makefile : '.',  # Needs the location of several target-specific folders
         target.readme : '.',
