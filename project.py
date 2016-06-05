@@ -158,6 +158,8 @@ def deployLibrary(targetProjectRootPath,library):
     if not os.path.exists(targetProjectRootPath):
         raise Exception("The target path {} does not exist.".format(targetProjectRootPath))
     try:
+        subprocess.call('git submodule init libraries/{}'.format(library.git_name),shell=True)
+        subprocess.call('git submodule update libraries/{}'.format(library.git_name),shell=True)
         subprocess.call('rsync -ac libraries/{} {}/libraries/'.format(library.git_name,targetProjectRootPath,library.git_name),shell=True)
     except:
         raise Exception('ERROR using rsync to copy {}'.format(library.proper_name))
