@@ -99,7 +99,7 @@ def main():
     The example below will make a project named 'myProject' for the STM32F4 Discovery
     board and deploy within it the ARM mbed libraries.
 
-    $ armwiz.py -p myProject -t stm32f4discovery --l mbed
+    $ armwiz.py -p myProject -t stm32f4discovery -l mbed
     """
 
     # Parse all command line arguments
@@ -124,6 +124,8 @@ def main():
         project.printConfigList('example',configInfo)
         exit()
 
+    if arguments.targetname == []:
+        arguments.targetname = ["no-target"]
     targetList = project.makeObjectList(configInfo,arguments.targetname)
     for target in targetList:
         for library in target.required_libraries.split(','):
@@ -136,10 +138,10 @@ def main():
     projectTempDir = '{}/{}'.format(tempDir.name,arguments.projectname)
     print('Project temporary location: {}'.format(projectTempDir))
     sys.stdout.flush() # Output everything in the stdout buffer and continue
+
     # TODO find where these values are hardcoded and substitute with varaibles.
     # TODO Add this part to the config file, so people can easily make their
     #      own format.
-
     sourceDirectory = 'source'
     includeDirectory = 'include'
     libraryDirectory = 'libraries'
